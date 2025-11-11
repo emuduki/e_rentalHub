@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Housing - Find Your Perfect Student Home</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Bootstrap JS will be loaded at the end of the document -->
+    <style>
+        :root {
+            --primary-blue: #2563eb;
+            --dark-blue: #1e40af;
+            --light-gray: #f3f4f6;
+            --dark-gray: #1f2937;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        }
+
+        /* Header Styles */
+        .navbar {
+            background-color: #ffffff;
+            padding: 1rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--dark-gray) !important;
+        }
+
+        .nav-link {
+            color: var(--dark-gray) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+        }
+
+            .btn-signin {
+            background-color: var(--dark-gray);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Modal Styles */
+        .modal-content {
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: none;
+            padding: 1.5rem 1.5rem 0.5rem;
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+        .btn-signin:hover {
+            background-color: #111827;
+            color: white;
+        }
+
+        /* Hero Section */
+       .hero-section {
+                position: relative;
+                height: calc(110vh - 70px);
+                width: 100%;
+                color: #fff;
+                display: flex;
+                align-items: center;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                background:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
+                url('uploads/pexels-vince-2227832.jpg') center/cover no-repeat;
+            
+            }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2.5rem;
+        }
+
+        /* Search Bar */
+        .search-bar {
+            background: white;
+            border-radius: 1rem;
+            padding: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .search-input-group {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-input-group i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+        }
+
+        .location-select {
+            padding: 0.75rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            font-size: 1rem;
+            min-width: 180px;
+        }
+
+        .btn-search {
+            background-color: var(--dark-gray);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn-search:hover {
+            background-color: #111827;
+            color: white;
+        }
+
+        /* Statistics Section */
+        .stats-section {
+            background: #000;
+            padding: 3rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stats-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+        }
+
+        .stat-item {
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Why Choose Us Section */
+        .features-section {
+            padding: 5rem 0;
+            background-color: var(--light-gray);
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 3rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        /* Filter Sidebar */
+        .filter-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 1040;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+        }
+
+        .filter-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .filter-sidebar {
+            position: fixed;
+            top: 0;
+            right: -360px;
+            width: 360px;
+            height: 100vh;
+            background: #ffffff;
+            box-shadow: -2px 0 12px rgba(15, 23, 42, 0.12);
+            z-index: 1050;
+            transition: right 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-sidebar.show {
+            right: 0;
+        }
+
+        .filter-header {
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .filter-header h5 {
+            margin: 0;
+            font-weight: 600;
+            color: var(--dark-gray);
+        }
+
+        .filter-close {
+            background: none;
+            border: none;
+            font-size: 1.25rem;
+            cursor: pointer;
+            color: #6b7280;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .filter-close:hover {
+            color: var(--dark-gray);
+        }
+
+        .filter-body {
+            flex: 1;
+            padding: 1.2rem 1.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .filter-intro {
+            margin: 0;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .filter-section {
+            border: 1px solid #eef2f7;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .filter-section label {
+            font-weight: 600;
+            margin-bottom: 0;
+            color: var(--dark-gray);
+            font-size: 0.95rem;
+        }
+
+        .filter-section select,
+        .filter-section input[type="text"],
+        .filter-section .form-select {
+            width: 100%;
+            padding: 0.6rem 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.6rem;
+            font-size: 0.95rem;
+        }
+
+        .price-range input[type="range"] {
+            width: 100%;
+            margin: 0.75rem 0 0.25rem;
+        }
+
+        .price-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+
+        .amenities-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.5rem 1rem;
+        }
+
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .amenity-item input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .amenity-item label {
+            margin: 0;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .feature-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 0.75rem;
+        }
+
+        .feature-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* How It Works Section */
+        .how-it-works-section {
+            padding: 5rem 0;
+            background-color: white;
+        }
+
+        .step-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+
+        .step-icon {
+            font-size: 2.5rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+
+        .step-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .step-separator {
+            width: 50px;
+            height: 2px;
+            background-color: #e5e7eb;
+            margin: 0 auto 1rem;
+        }
+
+        .step-description {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        /* Testimonials Section */
+        .testimonials-section {
+            padding: 5rem 0;
+            background-color: var(--light-gray);
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            height: 100%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            background-color: var(--primary-blue);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--dark-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .testimonial-university {
+            font-size: 0.9rem;
+            color: #6b7280;
+            margin-bottom: 0.75rem;
+        }
+
+        .testimonial-rating {
+            color: #fbbf24;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-text {
+            color: #6b7280;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+
+        /* Call to Action Section */
+        .cta-section {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-blue) 100%);
+            padding: 5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(255,255,255,0.03) 2px, rgba(255,255,255,0.03) 4px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+        }
+
+        .cta-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            padding: 3rem;
+            height: 100%;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            transition: transform 0.3s, background 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .cta-card:hover {
+            transform: translateY(-10px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .cta-icon-wrapper {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+        }
+
+        .cta-icon {
+            font-size: 2.5rem;
+            color: white;
+        }
+
+        .cta-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 1rem;
+        }
+
+        .cta-description {
+            font-size: 1.1rem;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .cta-button {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.75rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .cta-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Footer Section */
+        .footer {
+            background-color: #000;
+            color: white;
+            padding: 4rem 0 0;
+        }
+
+        .footer-brand {
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .footer-logo i {
+            font-size: 1.75rem;
+        }
+
+        .footer-tagline {
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-icons {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        .social-icon:hover {
+            background-color: var(--primary-blue);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-heading {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: white;
+        }
+
+        .footer-links {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: white;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .footer-contact-item i {
+            font-size: 1.25rem;
+            margin-top: 0.25rem;
+            color: var(--primary-blue);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .footer-bottom-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-copyright {
+            color: rgba(255, 255, 255, 0.8);
+            margin: 0;
+        }
+
+        .footer-policies {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .footer-policies a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-policies a:hover {
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .footer-bottom-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .footer-policies {
+                justify-content: center;
+            }
+        }
+
+        /* Help Button */
+        .help-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 50px;
+            height: 50px;
+            background-color: var(--dark-gray);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            cursor: pointer;
+        }
+
+        .help-button:hover {
+            background-color: #111827;
+            color: white;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .search-bar {
+                flex-direction: column;
+            }
+
+            .search-input-group,
+            .location-select,
+            .btn-search {
+                width: 100%;
+            }
+
+            .stat-number {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">Student Housing</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Features</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#locations">Locations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#testimonials">Testimonials</a>
+                    </li>
+                    <li class="nav-item">
+                        <button class="btn btn-signin" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            <i class="bi bi-arrow-right me-1"></i> Sign In
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-content">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1 class="hero-title">Find Your Perfect Student Home</h1>
+                    <p class="hero-subtitle">Discover affordable, safe, and comfortable housing near your university in Kenya</p>
+                    
+                    <!-- Search Bar -->
+                    <div class="search-bar">
+                        <div class="search-input-group">
+                            <i class="bi bi-search"></i>
+                            <input type="text" class="search-input" placeholder="Search by location or property name...">
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-geo-alt-fill text-primary me-2" style="font-size: 1.25rem;"></i>
+                            <select class="location-select">
+                                <option>Near University</option>
+                                <option>University of Nairobi</option>
+                                <option>Kenyatta University</option>
+                                <option>Strathmore University</option>
+                                <option>United States International University</option>
+                            </select>
+                        </div>
+                        <!--Advanced Features-->
+                        <div class="col-md-2 text-center">
+                            <button type="button" class="btn btn-light w-100" id="filterBtn"><i class="bi bi-sliders"></i>Filter</button>
+                        </div>
+                        <!-- Search Button -->
+                        <div class="col-md-1 text-center">
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="bi bi-search"></i>
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Statistics Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-number">1,200+</div>
+                    <div class="stat-label">Properties</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-number">2,800+</div>
+                    <div class="stat-label">Students</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Landlords</div>
+                </div>
+                <div class="col-6 col-md-3 stat-item">
+                    <div class="stat-number">15+</div>
+                    <div class="stat-label">Universities</div>
+                </div>
+            </div>
+        </div>
+        </section>
+
+		<!-- Recent Listed Properties Section -->
+	<div class="container text-center">
+		<h2 class="section-title mb-3">Recent Listed Property</h2>
+		<p class="section-subtitle text-muted mb-5">
+		Discover our latest listed properties across prime locations.
+		Find your perfect home, apartment, or investment opportunity today.
+		</p>
+		<div class="row g-4" id="recentPropertiesRow">
+			<div class="col-12">
+				<div class="text-center text-muted py-4" id="recentLoading">
+					<div class="spinner-border text-primary" role="status" style="width: 2rem; height: 2rem;"></div>
+					<div class="mt-2">Loading recent properties...</div>
+				</div>
+			</div>
+		</div>
+		<div class="text-center mt-2">
+			<a href="dashboards/sections/search_properties.php" class="btn btn-outline-dark btn-sm rounded-pill">Browse All Properties</a>
+		</div>
+	</div>
+
+    <!-- Why Choose Us Section -->
+    <section class="features-section" id="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Us</h2>
+            <p class="section-subtitle">We make finding student accommodation easy, safe, and hassle-free with features designed specifically for students</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-search feature-icon"></i>
+                        <h3 class="feature-title">Easy Search</h3>
+                        <p class="feature-description">Find properties near your university with advanced filters and real-time availability</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-shield-check feature-icon"></i>
+                        <h3 class="feature-title">Verified Listings</h3>
+                        <p class="feature-description">All properties and landlords are verified by our team for your safety and security</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-receipt feature-icon"></i>
+                        <h3 class="feature-title">Secure Payments</h3>
+                        <p class="feature-description">Pay safely using M-Pesa or bank transfer with transparent pricing and receipts</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-chat-dots feature-icon"></i>
+                        <h3 class="feature-title">Direct Messaging</h3>
+                        <p class="feature-description">Communicate directly with landlords and tenants through our secure messaging platform</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-geo-alt feature-icon"></i>
+                        <h3 class="feature-title">Near Campus</h3>
+                        <p class="feature-description">Find accommodation close to your university with detailed location information</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <i class="bi bi-star feature-icon"></i>
+                        <h3 class="feature-title">Reviews & Ratings</h3>
+                        <p class="feature-description">Read authentic reviews and ratings from other students to make informed decisions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works-section" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Finding your perfect student accommodation is easy with our simple 4-step process</p>
+            
+            <div class="row g-4">
+                <div class="col-md-3">
+                    <div class="step-item">
+                        <div class="step-number">01</div>
+                        <i class="bi bi-search step-icon"></i>
+                        <h3 class="step-title">Search Properties</h3>
+                        <div class="step-separator"></div>
+                        <p class="step-description">Browse available properties near your university with filters for price, type, and amenities</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-item">
+                        <div class="step-number">02</div>
+                        <i class="bi bi-calendar-check step-icon"></i>
+                        <h3 class="step-title">Book a Viewing</h3>
+                        <div class="step-separator"></div>
+                        <p class="step-description">Schedule a viewing with the landlord and ask any questions about the property.</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-item">
+                        <div class="step-number">03</div>
+                        <i class="bi bi-key step-icon"></i>
+                        <h3 class="step-title">Secure Your Booking</h3>
+                        <div class="step-separator"></div>
+                        <p class="step-description">Pay securely through our platform and receive your booking confirmation instantly</p>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="step-item">
+                        <div class="step-number">04</div>
+                        <i class="bi bi-house step-icon"></i>
+                        <h3 class="step-title">Move In</h3>
+                        <div class="step-separator"></div>
+                        <p class="step-description">Sign your contract, collect your keys, and move into your new home</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials-section" id="testimonials">
+        <div class="container">
+            <h2 class="section-title">What Students Say</h2>
+            <p class="section-subtitle">Join thousands of satisfied students who found their perfect home through our platform</p>
+            
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">SA</div>
+                        <h3 class="testimonial-name">Sarah Akinyi</h3>
+                        <p class="testimonial-university">Strathmore University</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="testimonial-text">Found the perfect bedsitter near campus in just 2 days! The process was so easy and the landlord was very responsive. Highly recommend this platform!</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">KK</div>
+                        <h3 class="testimonial-name">Kevin Kipchoge</h3>
+                        <p class="testimonial-university">USIU</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="testimonial-text">Great platform for students! The search filters made it easy to find affordable housing near my university. The payment process was also very smooth.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">GM</div>
+                        <h3 class="testimonial-name">Grace Muthoni</h3>
+                        <p class="testimonial-university">UoN</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <p class="testimonial-text">I love how all the properties are verified. It gave me peace of mind knowing that I was dealing with legitimate landlords. Found my apartment in less than a week!</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">BM</div>
+                        <h3 class="testimonial-name">Brian Mutua</h3>
+                        <p class="testimonial-university">JKUAT</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="testimonial-text">Excellent service! The platform made it so easy to compare different properties and find exactly what I was looking for. The booking process was seamless.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">LC</div>
+                        <h3 class="testimonial-name">Linda Chebet</h3>
+                        <p class="testimonial-university">Kenyatta University</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <p class="testimonial-text">The direct messaging feature was a game-changer. I could ask all my questions before booking and got quick responses. Found my perfect home in no time!</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="testimonial-card">
+                        <div class="testimonial-avatar">DO</div>
+                        <h3 class="testimonial-name">David Omondi</h3>
+                        <p class="testimonial-university">Daystar University</p>
+                        <div class="testimonial-rating">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-half"></i>
+                        </div>
+                        <p class="testimonial-text">Secure payment options gave me confidence in the platform. The entire process from search to move-in was smooth and well-organized. Highly recommended!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="cta-card">
+                        <div class="cta-icon-wrapper">
+                            <i class="bi bi-house cta-icon"></i>
+                        </div>
+                        <h2 class="cta-title">For Students</h2>
+                        <p class="cta-description">Find your perfect home near campus. Browse hundreds of verified properties and book with confidence.</p>
+                        <button class="cta-button" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            Get Started as Student
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="cta-card">
+                        <div class="cta-icon-wrapper">
+                            <i class="bi bi-building cta-icon"></i>
+                        </div>
+                        <h2 class="cta-title">For Landlords</h2>
+                        <p class="cta-description">List your properties and reach thousands of students. Manage bookings and payments easily.</p>
+                        <button class="cta-button" data-bs-toggle="modal" data-bs-target="#loginModal">
+                            List Your Property
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <!-- Brand Column -->
+                <div class="col-md-3">
+                    <div class="footer-brand">
+                        <a href="#" class="footer-logo">
+                            <i class="bi bi-house"></i>
+                            <span>Student Housing</span>
+                        </a>
+                        <p class="footer-tagline">Kenya's leading platform for student accommodation. Find your perfect home near campus.</p>
+                        <div class="social-icons">
+                            <a href="#" class="social-icon" aria-label="Facebook">
+                                <i class="bi bi-facebook"></i>
+                            </a>
+                            <a href="#" class="social-icon" aria-label="Twitter">
+                                <i class="bi bi-twitter"></i>
+                            </a>
+                            <a href="#" class="social-icon" aria-label="Instagram">
+                                <i class="bi bi-instagram"></i>
+                            </a>
+                            <a href="#" class="social-icon" aria-label="LinkedIn">
+                                <i class="bi bi-linkedin"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links Column -->
+                <div class="col-md-3">
+                    <h3 class="footer-heading">Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#about">About Us</a></li>
+                        <li><a href="#how-it-works">How It Works</a></li>
+                        <li><a href="#properties">Browse Properties</a></li>
+                        <li><a href="#list-property">List Property</a></li>
+                        <li><a href="#blog">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Support Column -->
+                <div class="col-md-3">
+                    <h3 class="footer-heading">Support</h3>
+                    <ul class="footer-links">
+                        <li><a href="#help">Help Center</a></li>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#safety">Safety Tips</a></li>
+                        <li><a href="#faqs">FAQs</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
+                    </ul>
+                </div>
+
+                <!-- Contact Column -->
+                <div class="col-md-3">
+                    <h3 class="footer-heading">Contact</h3>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-geo-alt-fill"></i>
+                        <span>Kisii, Kenya</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-telephone-fill"></i>
+                        <span>+254 794 362 939</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="bi bi-envelope-fill"></i>
+                        <span>info@studenthousing.co.ke</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div class="footer-bottom">
+                <div class="footer-bottom-content">
+                    <p class="footer-copyright">© 2025 Student Housing Platform. All rights reserved.</p>
+                    <div class="footer-policies">
+                        <a href="#privacy">Privacy Policy</a>
+                        <a href="#terms">Terms & Conditions</a>
+                        <a href="#cookies">Cookie Policy</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Help Button -->
+    <div class="help-button">
+        <i class="bi bi-question"></i>
+    </div>
+
+    <!-- Login Modal -->
+    <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Sign In</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="auth/login.php" method="POST">
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input" id="remember">
+                                    <label class="form-check-label" for="remember">Remember me</label>
+                                </div>
+                                <a href="#" class="text-decoration-none">Forgot password?</a>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">Sign In</button>
+                        <div class="text-center mt-3">
+                            <p class="mb-0">Don't have an account? <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#registerModal" data-bs-dismiss="modal">Register here</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="registerModalLabel">Create Account</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="auth/register.php" method="POST">
+                        <div class="mb-3">
+                            <label for="reg-username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="reg-username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reg-email" class="form-label">Email address</label>
+                            <input type="email" class="form-control" id="reg-email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reg-password" class="form-label">Password</label>
+                            <input type="password" class="form-control" id="reg-password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reg-role" class="form-label">Role</label>
+                            <select class="form-select" id="reg-role" name="role">
+                                <option value="" disabled selected>Select your role</option>
+                                <option value="student">Student</option>
+                                <option value="landlord">Landlord</option>
+                                <option value="admin">Admin</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="terms" required>
+                                <label class="form-check-label" for="terms">I agree to the Terms & Conditions</label>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-dark w-100">Create Account</button>
+                        <div class="text-center mt-3">
+                            <p class="mb-0">Already have an account? <a href="#" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#loginModal" data-bs-dismiss="modal">Sign in here</a></p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Sidebar -->
+    <div class="filter-overlay" id="filterOverlay"></div>
+    <div class="filter-sidebar" id="filterSidebar">
+        <div class="filter-header">
+            <h5>Filter Properties</h5>
+            <button type="button" class="filter-close" id="filterCloseBtn">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="filter-body">
+            <p class="filter-intro">Refine your search to find the perfect property</p>
+            
+            <div class="filter-section">
+                <label class="d-block mb-1">Property Type</label>
+                <select class="form-select form-select-sm">
+                    <option>All Types</option>
+                    <option>Studio</option>
+                    <option>Bedsitter</option>
+                    <option>Apartment</option>
+                    <option>Single Room</option>
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <label>Bedrooms</label>
+                <select class="form-select">
+                    <option>Any</option>
+                    <option>1</option>
+                    <option>2</option>
+                    <option>3</option>
+                    <option>4+</option>
+                </select>
+            </div>
+
+            <div class="filter-section">
+                <label>Price Range (KES per month)</label>
+                <div class="price-range">
+                    <input type="range" class="form-range" id="priceMin" min="0" max="100000" value="5000" step="1000">
+                    <input type="range" class="form-range" id="priceMax" min="0" max="100000" value="51000" step="1000">
+                    <div class="price-display">
+                        <span>KES <span id="priceMinDisplay">5,000</span></span>
+                        <span>KES <span id="priceMaxDisplay">51,000</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="filter-section">
+                <label>Amenities</label>
+                <div class="amenities-list">
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-wifi" name="amenities" value="WiFi">
+                        <label for="amenity-wifi">WiFi</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-parking" name="amenities" value="Parking">
+                        <label for="amenity-parking">Parking</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-water" name="amenities" value="Water 24/7">
+                        <label for="amenity-water">Water 24/7</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-security" name="amenities" value="Security">
+                        <label for="amenity-security">Security</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-generator" name="amenities" value="Backup Generator">
+                        <label for="amenity-generator">Backup Generator</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-laundry" name="amenities" value="Laundry">
+                        <label for="amenity-laundry">Laundry</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+	// Fetch and render recent properties from index.php?recent=1
+	(function(){
+		const row = document.getElementById('recentPropertiesRow');
+		if (!row) return;
+		fetch('index.php?recent=1', { method: 'GET', headers: { 'Accept': 'text/html' } })
+			.then(r => r.text())
+			.then(html => {
+				row.innerHTML = html;
+			})
+			.catch(() => {
+				const loading = document.getElementById('recentLoading');
+				if (loading) loading.innerHTML = 'Failed to load recent properties.';
+			});
+	})();
+
+	// Filter Sidebar Toggle
+	(function(){
+		const filterBtn = document.getElementById('filterBtn');
+		const filterSidebar = document.getElementById('filterSidebar');
+		const filterOverlay = document.getElementById('filterOverlay');
+		const filterCloseBtn = document.getElementById('filterCloseBtn');
+		const priceMin = document.getElementById('priceMin');
+		const priceMax = document.getElementById('priceMax');
+		const priceMinDisplay = document.getElementById('priceMinDisplay');
+		const priceMaxDisplay = document.getElementById('priceMaxDisplay');
+
+		function openFilter() {
+			filterSidebar.classList.add('show');
+			filterOverlay.classList.add('show');
+			document.body.style.overflow = 'hidden';
+		}
+
+		function closeFilter() {
+			filterSidebar.classList.remove('show');
+			filterOverlay.classList.remove('show');
+			document.body.style.overflow = '';
+		}
+
+		if (filterBtn) {
+			filterBtn.addEventListener('click', openFilter);
+		}
+
+		if (filterCloseBtn) {
+			filterCloseBtn.addEventListener('click', closeFilter);
+		}
+
+		if (filterOverlay) {
+			filterOverlay.addEventListener('click', closeFilter);
+		}
+
+		// Price range display updates
+		if (priceMin && priceMinDisplay) {
+			priceMin.addEventListener('input', function() {
+				priceMinDisplay.textContent = parseInt(this.value).toLocaleString();
+			});
+		}
+
+		if (priceMax && priceMaxDisplay) {
+			priceMax.addEventListener('input', function() {
+				priceMaxDisplay.textContent = parseInt(this.value).toLocaleString();
+			});
+		}
+	})();
+	</script>
+</body>
+</html>
+
