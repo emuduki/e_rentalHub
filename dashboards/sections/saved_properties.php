@@ -161,7 +161,7 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 									<div class="text-primary fw-bold">KES <?= $price ?></div>
 									<small class="text-muted">per month</small>
 								</div>
-								<a href="../houses/view.php?id=<?= (int)$p['id'] ?>" class="btn btn-dark btn-sm rounded-pill">View Details</a>
+								<a href="/e_rentalHub/houses/view.php?id=<?= (int)$p['id'] ?>" class="btn btn-dark btn-sm rounded-pill">View Details</a>
 							</div>
 						</div>
 					</div>

@@ -1,6 +1,6 @@
 <?php
-// Fix include path (project has folder named 'condig' in this workspace)
-include(__DIR__ . "/../condig/db.php");
+// Fix include path (project has folder named 'config' in this workspace)
+include(__DIR__ . "/../config/db.php");
 
 // Only handle POST requests
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

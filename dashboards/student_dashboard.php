@@ -206,7 +206,7 @@ $student_id = $_SESSION['user_id'];
                     <small class="text-muted"><?= htmlspecialchars($_SESSION['username'] ?? 'student') ?></small>
                 </div>
             </div>
-            <a href="../logout.php" class="btn btn-dark w-100 d-flex  align-items-center justify-content-center">
+            <a href="../auth/logout.php" class="btn btn-dark w-100 d-flex  align-items-center justify-content-center">
                 <i class="bi bi-box-arrow-right me-1"></i>Logout
             </a>
         </div>

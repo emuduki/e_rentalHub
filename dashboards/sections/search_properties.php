@@ -2,12 +2,9 @@
 session_start();
 include("../../config/db.php");
 
-// role check
+// Allow public browsing of properties. If user is logged in capture role/student id.
 $role = strtolower(trim($_SESSION["role"] ?? ''));
-if ($role !== 'student') {
-    header("Location: ../login.html");
-    exit();
-}
+$student_id = intval($_SESSION['user_id'] ?? 0);
 
 // read filters
 $q = trim($_GET['q'] ?? '');
@@ -82,6 +79,10 @@ if ($res === false) {
 } else {
     $properties = $res->fetch_all(MYSQLI_ASSOC);
     $errorMsg = null;
+    error_log("search_properties: Found " . count($properties) . " properties");
+    if (count($properties) > 0) {
+        error_log("First property ID: " . $properties[0]['id']);
+    }
 }
 $count = count($properties);
 
@@ -301,7 +302,7 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
                                     <div class="text-primary fw-bold">KES <?= $price ?></div>
                                     <small class="text-muted">per month</small>
                                 </div>
-                                <a href="../houses/view.php?id=<?= (int)$p['id'] ?>" class="btn btn-dark btn-sm rounded-pill">View Details</a>
+                                <a href="/e_rentalHub/houses/view.php?id=<?= (int)$p['id'] ?>" class="btn btn-dark btn-sm rounded-pill">View Details</a>
                             </div>
                         </div>
                     </div>
@@ -312,11 +313,27 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
 	</div>
     </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // expose whether current user is a logged-in student
+    const isStudent = <?= (isset($_SESSION['user_id']) && $role === 'student') ? 'true' : 'false' ?>;
     document.querySelectorAll('.fav-btn.save-property').forEach(btn => {
         btn.addEventListener('click', async function(e) {
             e.preventDefault();
+            // Only allow logged-in students to like/save properties
+            if (!isStudent) {
+                // show bootstrap modal prompting login
+                const modalEl = document.getElementById('loginPromptModal');
+                if (modalEl) {
+                    const m = new bootstrap.Modal(modalEl);
+                    m.show();
+                } else {
+                    // fallback to redirect if modal missing
+                    window.location.href = '../../login.html';
+                }
+                return;
+            }
             const propertyId = this.dataset.propertyId;
             const icon = this.querySelector('i');
             const isSaved = this.dataset.saved === '1';
@@ -372,5 +389,24 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<!-- Login prompt modal shown when a guest tries to save a property -->
+<div class="modal fade" id="loginPromptModal" tabindex="-1" aria-labelledby="loginPromptModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="loginPromptModalLabel">Please sign in</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                You need to be logged in as a student to save properties. Would you like to log in now?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="/e_rentalHub/login.html" class="btn btn-primary">Log in</a>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

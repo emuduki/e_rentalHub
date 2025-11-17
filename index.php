@@ -71,7 +71,7 @@ if (isset($_GET['recent']) && $_GET['recent'] === '1') {
 					<p class="fw-bold text-primary mb-3">
 						KES '.$price.' / month
 					</p>
-					<a href="dashboards/houses/view.php?id='.$id.'" class="btn btn-dark w-100 rounded-3 mt-auto">View Property</a>
+					<a href="houses/view.php?id='.$id.'" class="btn btn-dark w-100 rounded-3 mt-auto">View Property</a>
 				</div>
 			</div>
 		</div>';

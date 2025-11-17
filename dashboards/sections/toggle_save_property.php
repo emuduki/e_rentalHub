@@ -3,8 +3,11 @@ session_start();
 header('Content-Type: application/json');
 include("../../config/db.php");
 
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+// Only students may save properties
+$role = strtolower(trim($_SESSION['role'] ?? ''));
+if (!isset($_SESSION['user_id']) || $role !== 'student') {
+    error_log("toggle_save_property: Unauthorized access attempt. session_role=" . ($_SESSION['role'] ?? 'NULL'));
+    echo json_encode(['success' => false, 'message' => 'Unauthorized - please log in as a student to save properties.']);
     exit();
 }
 
@@ -17,7 +20,7 @@ $student_id = intval($_SESSION['user_id']);
 $property_id = intval($_POST['property_id']);
 $action = $_POST['action'];
 
-// Check if saved_properties table exists, create if not
+// Ensure saved_properties table exists
 $checkTable = $conn->query("SHOW TABLES LIKE 'saved_properties'");
 if (!$checkTable || $checkTable->num_rows === 0) {
     $createTable = "CREATE TABLE IF NOT EXISTS saved_properties (
@@ -26,7 +29,7 @@ if (!$checkTable || $checkTable->num_rows === 0) {
         property_id INT NOT NULL,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         UNIQUE KEY unique_save (student_id, property_id)
-    )";
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4";
     if (!$conn->query($createTable)) {
         echo json_encode([
             'success' => false,
@@ -42,19 +45,20 @@ try {
     } else {
         $stmt = $conn->prepare("DELETE FROM saved_properties WHERE student_id = ? AND property_id = ?");
     }
-    
+
     if (!$stmt) {
         throw new Exception("Failed to prepare statement: " . $conn->error);
     }
-    
+
     $stmt->bind_param("ii", $student_id, $property_id);
     $stmt->execute();
-    
+
     echo json_encode([
         'success' => true,
         'message' => $action === 'save' ? 'Property saved' : 'Property unsaved'
     ]);
 } catch (Exception $e) {
+    error_log('toggle_save_property error: ' . $e->getMessage());
     echo json_encode([
         'success' => false,
         'message' => 'Database error: ' . $e->getMessage()
@@ -63,6 +67,5 @@ try {
     if (isset($stmt) && $stmt) {
         $stmt->close();
     }
-    // Don't close the connection here as it might be used elsewhere
+    $conn->close();
 }
-?>

@@ -10,6 +10,24 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <!-- Bootstrap JS will be loaded at the end of the document -->
     <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .locations-section {
+            padding: 5rem 0;
+            background-color: var(--light-gray);
+        }
+
+        .location-info-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
         :root {
             --primary-blue: #2563eb;
             --dark-blue: #1e40af;
@@ -266,8 +284,8 @@
         .filter-sidebar {
             position: fixed;
             top: 0;
-            right: -360px;
-            width: 360px;
+            right: -400px;
+            width: 400px;
             height: 100vh;
             background: #ffffff;
             box-shadow: -2px 0 12px rgba(15, 23, 42, 0.12);
@@ -282,17 +300,19 @@
         }
 
         .filter-header {
-            padding: 1.25rem 1.5rem;
+            padding: 1rem 1.2rem;
             border-bottom: 1px solid #e5e7eb;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .filter-header h5 {
             margin: 0;
             font-weight: 600;
             color: var(--dark-gray);
+            font-size: 1.1rem;
         }
 
         .filter-close {
@@ -315,47 +335,50 @@
 
         .filter-body {
             flex: 1;
-            padding: 1.2rem 1.5rem 1.5rem;
+            padding: 0.8rem 1rem;
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.6rem;
+            overflow-y: auto;
         }
 
         .filter-intro {
             margin: 0;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #64748b;
+            margin-bottom: 0.3rem;
         }
 
         .filter-section {
             border: 1px solid #eef2f7;
-            border-radius: 0.75rem;
-            padding: 1rem;
+            border-radius: 0.6rem;
+            padding: 0.75rem;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
+            gap: 0.5rem;
+            flex-shrink: 0;
         }
 
         .filter-section label {
             font-weight: 600;
             margin-bottom: 0;
             color: var(--dark-gray);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
 
         .filter-section select,
         .filter-section input[type="text"],
         .filter-section .form-select {
             width: 100%;
-            padding: 0.6rem 0.75rem;
+            padding: 0.5rem 0.6rem;
             border: 1px solid #d1d5db;
-            border-radius: 0.6rem;
-            font-size: 0.95rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
         }
 
         .price-range input[type="range"] {
             width: 100%;
-            margin: 0.75rem 0 0.25rem;
+            margin: 0.5rem 0 0.2rem;
         }
 
         .price-display {
@@ -367,15 +390,15 @@
 
         .amenities-list {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.5rem 1rem;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
         }
 
         .amenity-item {
             display: flex;
             align-items: center;
             gap: 0.4rem;
-            font-size: 0.9rem;
+            font-size: 0.88rem;
         }
 
         .amenity-item input[type="checkbox"] {
@@ -1148,6 +1171,33 @@
         </div>
     </section>
 
+    <!-- Locations Section -->
+    <section class="locations-section" id="locations">
+        <div class="container">
+            <h2 class="section-title">Our Location</h2>
+            <p class="section-subtitle">Find us easily. We are located in the heart of Kisii town, easily accessible for all students.</p>
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-7">
+                    <div id="map"></div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="location-info-box">
+                        <h3 class="feature-title">Visit Our Office</h3>
+                        <p class="feature-description">Our team is ready to assist you with any inquiries. Feel free to visit us during office hours.</p>
+                        <div class="footer-contact-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span>Kisii, Kenya</span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="bi bi-telephone-fill"></i>
+                            <span>+254 794 362 939</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
@@ -1376,24 +1426,56 @@
                         <label for="amenity-wifi">WiFi</label>
                     </div>
                     <div class="amenity-item">
+                        <input type="checkbox" id="amenity-kitchen" name="amenities" value="Kitchen">
+                        <label for="amenity-kitchen">Kitchen</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-study-desk" name="amenities" value="Study Desk">
+                        <label for="amenity-study-desk">Study Desk</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-water" name="amenities" value="Water Included">
+                        <label for="amenity-water">Water Included</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-transport" name="amenities" value="Public Transport">
+                        <label for="amenity-transport">Public Transport</label>
+                    </div>
+                    <div class="amenity-item">
                         <input type="checkbox" id="amenity-parking" name="amenities" value="Parking">
                         <label for="amenity-parking">Parking</label>
                     </div>
                     <div class="amenity-item">
-                        <input type="checkbox" id="amenity-water" name="amenities" value="Water 24/7">
-                        <label for="amenity-water">Water 24/7</label>
+                        <input type="checkbox" id="amenity-furnished" name="amenities" value="Furnished">
+                        <label for="amenity-furnished">Furnished</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-shared-kitchen" name="amenities" value="Shared Kitchen">
+                        <label for="amenity-shared-kitchen">Shared Kitchen</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-electricity" name="amenities" value="Electricity Included">
+                        <label for="amenity-electricity">Electricity Included</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-quiet" name="amenities" value="Quiet Area">
+                        <label for="amenity-quiet">Quiet Area</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-ac" name="amenities" value="AC">
+                        <label for="amenity-ac">AC</label>
+                    </div>
+                    <div class="amenity-item">
+                        <input type="checkbox" id="amenity-washer" name="amenities" value="Washer/Dryer">
+                        <label for="amenity-washer">Washer/Dryer</label>
                     </div>
                     <div class="amenity-item">
                         <input type="checkbox" id="amenity-security" name="amenities" value="Security">
                         <label for="amenity-security">Security</label>
                     </div>
                     <div class="amenity-item">
-                        <input type="checkbox" id="amenity-generator" name="amenities" value="Backup Generator">
-                        <label for="amenity-generator">Backup Generator</label>
-                    </div>
-                    <div class="amenity-item">
-                        <input type="checkbox" id="amenity-laundry" name="amenities" value="Laundry">
-                        <label for="amenity-laundry">Laundry</label>
+                        <input type="checkbox" id="amenity-campus" name="amenities" value="Close to Campus">
+                        <label for="amenity-campus">Close to Campus</label>
                     </div>
                 </div>
             </div>
@@ -1467,6 +1549,24 @@
 		}
 	})();
 	</script>
+    <script>
+        function initMap() {
+            // The location of Kisii
+            const kisii = { lat: -0.6818, lng: 34.7677 };
+            // The map, centered at Kisii
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 14,
+                center: kisii,
+            });
+            // The marker, positioned at Kisii
+            const marker = new google.maps.Marker({
+                position: kisii,
+                map: map,
+                title: "Student Housing Office"
+            });
+        }
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDd5_XAqPcgJh0FHhyQJRG4-uvSe_abclE&callback=initMap"
+            async defer></script>
 </body>
 </html>
-
