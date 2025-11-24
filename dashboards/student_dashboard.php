@@ -46,12 +46,17 @@ $student_id = $_SESSION['user_id'];
             overflow: hidden;       /* ensure no scrollbar */
             border-right: 1px solid #dee2e6;
             box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s ease;
+                transition: all 0.3s ease;
+                z-index: 1200; /* ensure sidebar sits above main content */
         }
             /* When collapsed */
          .sidebar.collapsed {
             transform: translateX(-260px);
         }
+        .main-content { margin-left: 260px; transition: margin-left .28s ease; }
+        .main-content.collapsed { margin-left: 0; }
+        .sidebar .nav { position: relative; z-index: 1210; }
+        .sidebar .nav a { position: relative; z-index: 1211; pointer-events: auto; }
         .sidebar .brand {
             display: flex;
             align-items: center;
@@ -235,24 +240,29 @@ document.addEventListener("DOMContentLoaded", () => {
     content.style.marginLeft = isCollapsed ? '0' : '260px';
   });
 
-  window.loadSection = function(section, el = null) {
-    fetch(`sections/${section}.php`)
-      .then(res => res.text())
-      .then(html => {
-        content.innerHTML = html;
+    window.loadSection = function(section, el = null) {
+        const url = '/e_rentalHub/dashboards/sections/' + section + '.php';
+        console.debug('Loading section', section, 'from', url);
+        fetch(url)
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to load section: ' + res.status + ' ' + res.statusText);
+                return res.text();
+            })
+            .then(html => {
+                content.innerHTML = html;
                 // Remove active from all links and add to the matching link
                 document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
-                // Try to find the link by its onclick attribute
-                const selector = `.sidebar a[onclick*="${section}"]`;
-                const matching = document.querySelector(selector);
-                if (matching) matching.classList.add('active');
-      })
-      .catch(err => console.error("Error loading section:", err));
-  };
+                if (el) el.classList.add('active');
+            })
+            .catch(err => {
+                console.error("Error loading section:", err);
+                content.innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
+            });
+    };
 
-  // Default section load
-    // Load search_properties by default when opening the student dashboard
-    loadSection("search_properties");
+    // Default section load: mark the link active when loading
+    const searchLink = document.querySelector('.sidebar a[onclick*="search_properties"]');
+    loadSection("search_properties", searchLink);
 });
 </script>
 </html>

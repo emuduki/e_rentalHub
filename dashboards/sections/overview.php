@@ -9,44 +9,64 @@ if ($role !== 'landlord') {
     exit();
 }
 
-$landlord_id = $_SESSION['user_id'];
+// Resolve the landlord record id from the logged-in user_id. Many tables store landlord id separately
+$user_id = $_SESSION['user_id'] ?? null;
+$landlord_id = 0;
+if ($user_id) {
+    $stmt = $conn->prepare("SELECT id FROM landlords WHERE user_id = ? LIMIT 1");
+    if ($stmt) {
+        $stmt->bind_param('i', $user_id);
+        $stmt->execute();
+        $res = $stmt->get_result();
+        if ($res && $res->num_rows > 0) {
+            $landlord_id = (int)$res->fetch_assoc()['id'];
+        }
+        $stmt->close();
+    }
+}
 
-// Available properties (not reserved/approved)
-$available_query = $conn->query("
-    SELECT COUNT(*) AS total FROM properties p
-    WHERE p.landlord_id = $landlord_id
-    AND p.id NOT IN (
-        SELECT property_id FROM reservations WHERE status = 'approved'
-    )
-");
-$available_properties = $available_query ? $available_query->fetch_assoc()['total'] : 0;
+// If landlord_id could not be resolved, set counts to zero and avoid running queries that expect a landlord id
+if (!$landlord_id) {
+    $available_properties = 0;
+    $total_properties_alias = 0;
+    $reserved = 0;
+    $pending_reservations = 0;
+    $total_inquiries = 0;
+    $revenue = 0;
+    // continue to render a page that indicates no landlord profile found
+} else {
+    // Available properties and totals
+    $available_query = $conn->query("\
+        SELECT COUNT(*) AS total FROM properties p\
+        WHERE p.landlord_id = $landlord_id\
+        AND p.id NOT IN (SELECT property_id FROM reservations WHERE status = 'approved')\
+    ");
+    $available_properties = $available_query ? (int)$available_query->fetch_assoc()['total'] : 0;
 
-// Total properties (properties table)
-$properties_query = $conn->query("SELECT COUNT(*) AS total FROM properties WHERE landlord_id = $landlord_id");
-$total_properties = $properties_query ? $properties_query->fetch_assoc()['total'] : 0;
-$total_properties_alias = $total_properties; // Alias for display
+    // Total properties (properties table)
+    $properties_query = $conn->query("SELECT COUNT(*) AS total FROM properties WHERE landlord_id = $landlord_id");
+    $total_properties = $properties_query ? (int)$properties_query->fetch_assoc()['total'] : 0;
+    $total_properties_alias = $total_properties; // Alias for display
 
+    // Total reservations (join through properties table)
+    $reservations_query = $conn->query("\
+        SELECT COUNT(*) AS total \n\
+        FROM reservations r \n\
+        JOIN properties p ON r.property_id = p.id \n\
+        WHERE p.landlord_id = $landlord_id\
+    ");
+    $total_reservations = $reservations_query ? (int)$reservations_query->fetch_assoc()['total'] : 0;
+    $reserved = $total_reservations; // Alias for display
 
-// Total reservations (join through properties table)
-$reservations_query = $conn->query("
-    SELECT COUNT(*) AS total 
-    FROM reservations r 
-    JOIN properties p ON r.property_id = p.id 
-    WHERE p.landlord_id = $landlord_id
-");
-$total_reservations = $reservations_query ? $reservations_query->fetch_assoc()['total'] : 0;
-$reserved = $total_reservations; // Alias for display
-
-
-
-// Pending reservations
-$pending_query = $conn->query("
-    SELECT COUNT(*) AS total 
-    FROM reservations r 
-    JOIN houses h ON r.house_id = h.id 
-    WHERE h.landlord_id = $landlord_id AND r.status = 'pending'
-");
-$pending_reservations = $pending_query ? $pending_query->fetch_assoc()['total'] : 0;
+    // Pending reservations (use properties matching)
+    $pending_query = $conn->query("\
+        SELECT COUNT(*) AS total \n\
+        FROM reservations r \n\
+        JOIN properties p ON r.property_id = p.id \n\
+        WHERE p.landlord_id = $landlord_id AND r.status = 'pending'\
+    ");
+    $pending_reservations = $pending_query ? (int)$pending_query->fetch_assoc()['total'] : 0;
+}
 
 
 // Total inquiries (if table exists)
@@ -369,13 +389,13 @@ $revenue_growth = 0;
             <?php
             // Fetch the 3 most recent reservations for this landlord
             $recent_reservations_query = $conn->query("
-                SELECT r.id,r.status, h.title AS house_title, u.name AS tenant_name 
-                FROM reservations r 
-                JOIN houses h ON r.house_id = h.id 
-                JOIN users u ON r.tenant_id = u.id 
-                WHERE h.landlord_id = $landlord_id 
-                ORDER BY r.created_at DESC 
-                LIMIT 3
+                  SELECT r.id, r.status, p.title AS property_title, COALESCE(u.name, u.username, u.email) AS tenant_name 
+                  FROM reservations r 
+                  JOIN properties p ON r.property_id = p.id 
+                  LEFT JOIN users u ON (u.user_id = r.student_id OR u.id = r.student_id) 
+                  WHERE p.landlord_id = $landlord_id 
+                  ORDER BY r.created_at DESC 
+                  LIMIT 3
             ");
             if ($recent_reservations_query && $recent_reservations_query->num_rows > 0):
                 while ($row = $recent_reservations_query->fetch_assoc()):
@@ -387,7 +407,7 @@ $revenue_growth = 0;
                 <div class="reservation-item d-flex justify-content-between align-items-center py-2 border-bottom">
                     <div>
                         <strong><?= htmlspecialchars($row['tenant_name']) ?></strong><br>
-                        <small class="text-muted"><?= htmlspecialchars($row['house_title']) ?></small>
+                            <small class="text-muted"><?= htmlspecialchars($row['property_title']) ?></small>
                     </div>
                     <span class="<?= $status_class ?> text-capitalize"><?= htmlspecialchars($status); ?></span>
                     
@@ -414,13 +434,13 @@ $revenue_growth = 0;
             <?php
             // Fetch top 3 performing properties based on reservations
             $top_properties_query = $conn->query("
-                SELECT h.title, COUNT(r.id) AS reservation_count, h.rent
-                FROM houses h 
-                LEFT JOIN reservations r ON h.id = r.house_id 
-                WHERE h.landlord_id = $landlord_id 
-                GROUP BY h.id 
-                ORDER BY reservation_count DESC 
-                LIMIT 3
+                 SELECT p.title, COUNT(r.id) AS reservation_count, p.rent
+                 FROM properties p 
+                 LEFT JOIN reservations r ON p.id = r.property_id 
+                 WHERE p.landlord_id = $landlord_id 
+                 GROUP BY p.id 
+                 ORDER BY reservation_count DESC 
+                 LIMIT 3
             "); // This query was missing h.rent
 
             if ($top_properties_query && $top_properties_query->num_rows > 0):

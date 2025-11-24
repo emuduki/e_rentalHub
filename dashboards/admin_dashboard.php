@@ -28,7 +28,7 @@ if ($role !== 'admin') {
 
     /* Sidebar */
     .sidebar {
-        min-width: 260px;
+        width: 260px;
         background-color: #ffffff; /* darker shade than navbar */
         padding-top: 6px 0;           /* reduced padding to fit everything */
         height: calc(100vh - 56px); /* full height minus navbar */
@@ -43,12 +43,20 @@ if ($role !== 'admin') {
         overflow: hidden;       /* ensure no scrollbar */
         border-right: 1px solid #dee2e6;
         box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
-        transition: all 0.3s ease;
+        transition: transform 0.28s ease, width 0.28s ease;
+        z-index: 1200; /* ensure sidebar sits above main content */
     }
         /* When collapsed */
     .sidebar.collapsed {
-        margin-left: -280px;
+        transform: translateX(-260px);
     }
+
+    /* Main content spacing to accommodate sidebar */
+    .main-content { margin-left: 260px; transition: margin-left .28s ease; }
+    .main-content.collapsed { margin-left: 0; }
+    /* Ensure sidebar links are clickable above other elements */
+    .sidebar .nav { position: relative; z-index: 1210; }
+    .sidebar .nav a { position: relative; z-index: 1211; pointer-events: auto; }
     .sidebar .brand {
         display: flex;
         align-items: center;
@@ -193,12 +201,12 @@ if ($role !== 'admin') {
 <!--  Sidebar -->
 <div class="sidebar" id="sidebar">
     <ul class="nav flex-column mt-4">
-        <li><a href="javascript:void(0);" class="active" onclick="loadSection('dashboard', this)"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+        <li><a href="javascript:void(0);" class="active" onclick="loadSection('a_dashboard', this)"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('users', this)"><i class="bi bi-people me-2"></i>Users</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('properties', this)"><i class="bi bi-building me-2"></i>Properties</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('bookings', this)"><i class="bi bi-calendar-check me-2"></i>Bookings</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('financials', this)"><i class="bi bi-cash-stack me-2"></i>Financial</a></li>
-        <li><a href="javascript:void(0);"  onclick="loadSection('support', this)"><i class="bi bi-chat-dots me-2"></i>support</a></li>
+        <li><a href="javascript:void(0);" onclick="loadSection('support', this)"><i class="bi bi-chat-dots me-2"></i>Support</a></li>
         <li><a href="javascript:void(0);" onclick="loadSection('settings', this)"><i class="bi bi-gear me-2"></i>Settings</a></li>
     </ul>
 
@@ -234,20 +242,28 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector(".main-content").classList.toggle("collapsed");
   });
 
-  window.loadSection = function(section, el = null) {
-    fetch(`sections/${section}.php`)
-      .then(res => res.text())
-      .then(html => {
-        document.getElementById("content").innerHTML = html;
-        document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
-        if (el) el.classList.add("active");
-      })
-      .catch(err => console.error("Error loading section:", err));
-  };
+    window.loadSection = function(section, el = null) {
+        // use absolute path to avoid relative URL 404s
+        fetch('/e_rentalHub/dashboards/sections/' + section + '.php')
+            .then(res => {
+                if (!res.ok) throw new Error('Failed to load section: ' + res.status + ' ' + res.statusText);
+                return res.text();
+            })
+            .then(html => {
+                document.getElementById("content").innerHTML = html;
+                document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
+                if (el) el.classList.add("active");
+            })
+            .catch(err => {
+                console.error("Error loading section:", err);
+                document.getElementById("content").innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
+            });
+    };
 
-  // Default section load
-  const dashboardLink = document.querySelector('.sidebar a[onclick*="dashboard"]');
-  loadSection("dashboard", dashboardLink);
+    // Default section load — find the dashboard link by partial onclick attribute to be robust
+    const dashboardLink = document.querySelector('.sidebar a[onclick*="a_dashboard"]');
+    loadSection("a_dashboard", dashboardLink);
+
 });
 </script>
 

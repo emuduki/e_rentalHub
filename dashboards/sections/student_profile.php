@@ -15,76 +15,8 @@ if ($studentUserId <= 0) {
 }
 
 
-// Handle profile update
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$fullName = $conn->real_escape_string(trim($_POST['full_name'] ?? ''));
-	$studentIdentifier = $conn->real_escape_string(trim($_POST['student_identifier'] ?? ''));
-	$email = $conn->real_escape_string(trim($_POST['email'] ?? ''));
-	$phone = $conn->real_escape_string(trim($_POST['phone'] ?? ''));
-	$bio = $conn->real_escape_string(trim($_POST['bio'] ?? ''));
-	$university = $conn->real_escape_string(trim($_POST['university'] ?? ''));
-	$course = $conn->real_escape_string(trim($_POST['course'] ?? ''));
-	$year = $conn->real_escape_string(trim($_POST['year_of_study'] ?? ''));
-	$address = $conn->real_escape_string(trim($_POST['current_address'] ?? ''));
-	$emName = $conn->real_escape_string(trim($_POST['emergency_name'] ?? ''));
-	$emPhone = $conn->real_escape_string(trim($_POST['emergency_phone'] ?? ''));
-
-	// Handle avatar upload (optional)
-	$avatarFilename = null;
-	if (!empty($_FILES['avatar']['name'])) {
-		$uploadDir = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . "uploads" . DIRECTORY_SEPARATOR;
-		if (!is_dir($uploadDir)) {
-			mkdir($uploadDir, 0777, true);
-		}
-		$allowedExtensions = ['jpg','jpeg','png','gif'];
-		$allowedMime = ['image/jpeg','image/png','image/gif'];
-		$orig = $_FILES['avatar']['name'];
-		$tmp = $_FILES['avatar']['tmp_name'];
-		$size = (int)$_FILES['avatar']['size'];
-		$ext = strtolower(pathinfo($orig, PATHINFO_EXTENSION));
-		$ok = in_array($ext, $allowedExtensions, true);
-		$detected = function_exists('finfo_open') ? finfo_file(finfo_open(FILEINFO_MIME_TYPE), $tmp) : $_FILES['avatar']['type'];
-		if ($ok && in_array($detected, $allowedMime, true) && $size <= 5 * 1024 * 1024) {
-			$avatarFilename = "avatar_" . $studentUserId . "_" . time() . "." . $ext;
-			$target = $uploadDir . $avatarFilename;
-			if (!move_uploaded_file($tmp, $target)) {
-				$avatarFilename = null;
-			}
-		}
-	}
-
-	// Upsert
-	$exists = $conn->query("SELECT id FROM student_profiles WHERE user_id={$studentUserId} LIMIT 1");
-	if ($exists && $exists->num_rows > 0) {
-		$setAvatar = $avatarFilename ? ", avatar='{$conn->real_escape_string($avatarFilename)}'" : "";
-		$conn->query("
-			UPDATE student_profiles SET
-				full_name='{$fullName}',
-				student_identifier='{$studentIdentifier}',
-				email='{$email}',
-				phone='{$phone}',
-				bio='{$bio}',
-				university='{$university}',
-				course='{$course}',
-				year_of_study='{$year}',
-				current_address='{$address}',
-				emergency_name='{$emName}',
-				emergency_phone='{$emPhone}'
-				{$setAvatar}
-			WHERE user_id={$studentUserId}
-			LIMIT 1
-		");
-	} else {
-		$conn->query("
-			INSERT INTO student_profiles
-				(user_id, full_name, student_identifier, email, phone, bio, university, course, year_of_study, current_address, emergency_name, emergency_phone, avatar)
-			VALUES
-				({$studentUserId}, '{$fullName}', '{$studentIdentifier}', '{$email}', '{$phone}', '{$bio}', '{$university}', '{$course}', '{$year}', '{$address}', '{$emName}', '{$emPhone}', " . ($avatarFilename ? "'{$conn->real_escape_string($avatarFilename)}'" : "NULL") . ")
-		");
-	}
-	header("Location: student_profile.php?updated=1");
-	exit();
-}
+// Student profile saving is handled centrally by `dashboards/save_profile.php`.
+// The form on this page now submits to that endpoint via JavaScript.
 
 // Load profile
 $profile = [
@@ -101,9 +33,16 @@ $profile = [
 	'emergency_phone' => '',
 	'avatar' => ''
 ];
-$res = $conn->query("SELECT * FROM student_profiles WHERE user_id={$studentUserId} LIMIT 1");
+
+// Join users and students table to get the most accurate data, preferring students table data.
+$res = $conn->query("
+    SELECT u.email AS user_email, s.*
+    FROM users u
+    LEFT JOIN students s ON u.user_id = s.user_id
+    WHERE u.user_id = {$studentUserId} LIMIT 1
+");
 if ($res && $res->num_rows > 0) {
-	$profile = $res->fetch_assoc();
+	$profile = array_merge(['email' => ''], $res->fetch_assoc()); // ensure email key exists
 }
 
 $uploadsBaseUrl = "/e_rentalHub/uploads/";
@@ -124,6 +63,8 @@ if (!empty($profile['avatar'])) {
 		.profile-header{background:#f8fafc;border-radius:16px;padding:24px 20px;display:flex;gap:16px;align-items:center;}
 		.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;background:#e9ecef;display:flex;align-items:center;justify-content:center;font-weight:700;color:#6c757d;font-size:28px;position:relative}
 		.avatar .cam{position:absolute;right:-2px;bottom:-2px;background:#212529;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:pointer}
+		.btn-save{background:#000;color:#fff;padding:10px 20px;border-radius:8px;font-weight:600}
+		.btn-save:hover{background:#222;transform:translateY(-1px)}
 		.kv{color:#6c757d}
 		.card-section{border-radius:16px;border:1px solid rgba(0,0,0,0.06)}
 		.section-title{font-weight:700}
@@ -131,10 +72,14 @@ if (!empty($profile['avatar'])) {
 	</head>
 <body>
 	<div class="container py-4">
+		<div id="studentAlertPlaceholder"></div>
+		<!-- Debug area for quick client-side visibility while troubleshooting -->
+		<div id="studentDebug" style="font-family:monospace;white-space:pre-wrap;margin-top:8px;color:#333"></div>
 		<?php if (isset($_GET['updated'])): ?>
 		<div class="alert alert-success">Profile updated successfully.</div>
 		<?php endif; ?>
 
+	<form id="studentProfileForm" method="POST" enctype="multipart/form-data">
 		<div class="profile-header mb-4">
 			<div class="position-relative">
 				<?php if ($avatarUrl): ?>
@@ -142,42 +87,47 @@ if (!empty($profile['avatar'])) {
 				<?php else: ?>
 					<div class="avatar"><?= strtoupper(substr($profile['full_name'] ?: 'KK', 0, 2)) ?></div>
 				<?php endif; ?>
+				<label class="cam" onclick="document.getElementById('avatar_input').click()"><i class="bi bi-camera"></i></label>
+				<input type="file" id="avatar_input" name="avatar" accept="image/*" class="d-none">
 			</div>
 			<div class="flex-grow-1">
-				<h4 class="mb-1"><?= htmlspecialchars($profile['full_name'] ?: 'Kevin Kipchoge') ?></h4>
-				<div class="text-muted">USIU · <?= htmlspecialchars($profile['course'] ?: 'Business Administration') ?></div>
-				<small class="text-muted">Student ID: <?= htmlspecialchars($profile['student_identifier'] ?: 'STU2024001') ?></small>
+				<h4 class="mb-1"><input type="text" name="full_name" class="form-control form-control-sm" value="<?= htmlspecialchars($profile['full_name'] ?: '') ?>"></h4>
+				<div class="text-muted"><input type="text" name="course" class="form-control form-control-sm" value="<?= htmlspecialchars($profile['course'] ?: '') ?>" placeholder="Course / Program" style="max-width:320px"></div>
+				<small class="text-muted">Student ID: <input type="text" name="student_identifier" class="form-control form-control-sm d-inline-block" value="<?= htmlspecialchars($profile['student_identifier'] ?: '') ?>" style="width:160px"></small>
 			</div>
-			<button class="btn btn-dark" data-bs-toggle="modal" data-bs-target="#editProfileModal"><i class="bi bi-pencil me-1"></i>Edit</button>
+				<div class="ms-auto">
+					<!-- Save button: use triggerSave to ensure non-blocking handling -->
+					<button type="button" id="saveStudentBtn" class="btn btn-save" onclick="triggerSave(event)">Save Changes</button>
+				</div>
 		</div>
 
 		<div class="row g-3">
 			<div class="col-12">
 				<div class="card card-section">
 					<div class="card-body">
-						<h6 class="section-title mb-3">Personal Information</h6>
-						<div class="row g-3">
-							<div class="col-md-6">
-								<div class="kv">Full Name</div>
-								<div><?= htmlspecialchars($profile['full_name'] ?: 'Kevin Kipchoge') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Student ID</div>
-								<div><?= htmlspecialchars($profile['student_identifier'] ?: 'STU2024001') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Email Address</div>
-								<div><?= htmlspecialchars($profile['email'] ?: 'kevin.k@student.ac.ke') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Phone Number</div>
-								<div><?= htmlspecialchars($profile['phone'] ?: '+254 756 789 012') ?></div>
-							</div>
-							<div class="col-12">
-								<div class="kv">Bio</div>
-								<div><?= htmlspecialchars($profile['bio'] ?: 'Third year business student looking for affordable accommodation near campus.') ?></div>
-							</div>
-						</div>
+								<h6 class="section-title mb-3">Personal Information</h6>
+								<div class="row g-3">
+									<div class="col-md-6">
+										<label class="form-label">Full Name</label>
+										<input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($profile['full_name']) ?>">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label">Student ID</label>
+										<input type="text" name="student_identifier" class="form-control" value="<?= htmlspecialchars($profile['student_identifier']) ?>">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label">Email Address</label>
+										<input type="email" name="email" class="form-control" value="<?= htmlspecialchars($profile['email']) ?>">
+									</div>
+									<div class="col-md-6">
+										<label class="form-label">Phone Number</label>
+										<input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($profile['phone']) ?>">
+									</div>
+									<div class="col-12">
+										<label class="form-label">Bio</label>
+										<textarea name="bio" class="form-control" rows="3"><?= htmlspecialchars($profile['bio']) ?></textarea>
+									</div>
+								</div>
 					</div>
 				</div>
 			</div>
@@ -187,68 +137,6 @@ if (!empty($profile['avatar'])) {
 					<div class="card-body">
 						<h6 class="section-title mb-3">Academic Information</h6>
 						<div class="row g-3">
-							<div class="col-md-6">
-								<div class="kv">University</div>
-								<div><?= htmlspecialchars($profile['university'] ?: 'USIU') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Course/Program</div>
-								<div><?= htmlspecialchars($profile['course'] ?: 'Business Administration') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Year of Study</div>
-								<div><?= htmlspecialchars($profile['year_of_study'] ?: 'Third Year') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Current Address</div>
-								<div><?= htmlspecialchars($profile['current_address'] ?: 'Main Campus Hostel, USIU') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Emergency Contact</div>
-								<div><?= htmlspecialchars($profile['emergency_name'] ?: 'Jane Kipchoge') ?></div>
-							</div>
-							<div class="col-md-6">
-								<div class="kv">Contact Phone</div>
-								<div><?= htmlspecialchars($profile['emergency_phone'] ?: '+254 722 123 456') ?></div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-
-	<!-- Edit Modal -->
-	<div class="modal fade" id="editProfileModal" tabindex="-1" aria-hidden="true">
-		<div class="modal-dialog modal-lg">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title">Update Profile</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<form method="post" enctype="multipart/form-data">
-					<div class="modal-body">
-						<div class="row g-3">
-							<div class="col-md-6">
-								<label class="form-label">Full Name</label>
-								<input type="text" name="full_name" class="form-control" value="<?= htmlspecialchars($profile['full_name']) ?>">
-							</div>
-							<div class="col-md-6">
-								<label class="form-label">Student ID</label>
-								<input type="text" name="student_identifier" class="form-control" value="<?= htmlspecialchars($profile['student_identifier']) ?>">
-							</div>
-							<div class="col-md-6">
-								<label class="form-label">Email</label>
-								<input type="email" name="email" class="form-control" value="<?= htmlspecialchars($profile['email']) ?>">
-							</div>
-							<div class="col-md-6">
-								<label class="form-label">Phone</label>
-								<input type="text" name="phone" class="form-control" value="<?= htmlspecialchars($profile['phone']) ?>">
-							</div>
-							<div class="col-12">
-								<label class="form-label">Bio</label>
-								<textarea name="bio" class="form-control" rows="2"><?= htmlspecialchars($profile['bio']) ?></textarea>
-							</div>
 							<div class="col-md-6">
 								<label class="form-label">University</label>
 								<input type="text" name="university" class="form-control" value="<?= htmlspecialchars($profile['university']) ?>">
@@ -266,30 +154,153 @@ if (!empty($profile['avatar'])) {
 								<input type="text" name="current_address" class="form-control" value="<?= htmlspecialchars($profile['current_address']) ?>">
 							</div>
 							<div class="col-md-6">
-								<label class="form-label">Emergency Contact Name</label>
+								<label class="form-label">Emergency Contact</label>
 								<input type="text" name="emergency_name" class="form-control" value="<?= htmlspecialchars($profile['emergency_name']) ?>">
 							</div>
 							<div class="col-md-6">
-								<label class="form-label">Emergency Contact Phone</label>
+								<label class="form-label">Contact Phone</label>
 								<input type="text" name="emergency_phone" class="form-control" value="<?= htmlspecialchars($profile['emergency_phone']) ?>">
-							</div>
-							<div class="col-12">
-								<label class="form-label">Profile Photo</label>
-								<input type="file" name="avatar" accept="image/*" class="form-control">
-								<small class="text-muted">JPG, PNG or GIF up to 5MB</small>
 							</div>
 						</div>
 					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-						<button type="submit" class="btn btn-dark">Save Changes</button>
-					</div>
-				</form>
+				</div>
 			</div>
 		</div>
 	</div>
 
+		</form>
+
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+	<script>
+	function showStudentAlert(type, message) {
+	    const ph = document.getElementById('studentAlertPlaceholder');
+	    ph.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
+	}
+
+	function showStudentDebug(msg) {
+		try {
+			const d = document.getElementById('studentDebug');
+			if (d) {
+				d.textContent = new Date().toLocaleTimeString() + ' - ' + msg + "\n" + d.textContent;
+			}
+		} catch (e) {
+			console.log('debug:', msg);
+		}
+	}
+
+	// non-blocking wrapper called by the button; keeps logs and calls submit
+	function submitStudentProfileForm(e) {
+		// Prevent native form submission
+		if (e && typeof e.preventDefault === 'function') e.preventDefault();
+		console.log('submitStudentProfileForm entered');
+		showStudentDebug('submitStudentProfileForm entered');
+
+		const form = document.getElementById('studentProfileForm');
+		if (!form) {
+			console.error('studentProfileForm not found');
+			showStudentDebug('studentProfileForm not found');
+			return;
+		}
+
+		const formData = new FormData(form);
+		// Add a flag so save_profile.php knows this is coming from the student form
+		formData.append('source', 'student_profile');
+
+		const saveBtn = document.getElementById('saveStudentBtn');
+		const originalBtnText = saveBtn ? saveBtn.innerHTML : null;
+		if (saveBtn) {
+			saveBtn.disabled = true;
+			saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+		}
+
+		console.log('submitStudentProfileForm: sending fetch to /e_rentalHub/dashboards/save_profile.php', { user_id: <?= json_encode($studentUserId) ?> });
+		showStudentDebug('submitStudentProfileForm: sending fetch');
+
+		fetch('/e_rentalHub/dashboards/save_profile.php', {
+			method: 'POST',
+			body: formData,
+			credentials: 'same-origin'
+		})
+		.then(response => {
+			console.log('Response status:', response.status, 'ok:', response.ok);
+			if (!response.ok) throw new Error('HTTP error ' + response.status);
+			return response.text();
+		})
+		.then(text => {
+			console.log('Raw response text:', text);
+			let data = null;
+			try {
+				data = JSON.parse(text);
+			} catch (err) {
+				console.error('Failed to parse JSON from save_profile:', err, text.substring(0,300));
+				showStudentAlert('danger', 'Unexpected server response. Check console for details.');
+				return;
+			}
+
+			if (data.success) {
+				showStudentAlert('success', data.message || 'Profile saved successfully');
+				// keep UX consistent with landlord: reload to reflect updated values
+				setTimeout(() => location.reload(), 600);
+			} else {
+				showStudentAlert('danger', data.message || 'Failed to save profile');
+			}
+		})
+		.catch(err => {
+			console.error('Save profile error', err);
+			showStudentAlert('danger', 'An error occurred while saving the profile. Check console/logs.');
+		})
+		.finally(() => {
+			if (saveBtn) {
+				saveBtn.disabled = false;
+				if (originalBtnText !== null) saveBtn.innerHTML = originalBtnText;
+			}
+		});
+	}
+			})
+			.finally(() => {
+				if (saveBtn) {
+					saveBtn.disabled = false;
+					if (originalBtnText !== null) saveBtn.innerHTML = originalBtnText;
+				}
+			});
+			// call with a dummy event that has preventDefault to avoid native submit
+			submitStudentProfileForm({ preventDefault: function(){} });
+		});
+	}
+
+	// Ensure the form never performs a native submit (pressing Enter etc.)
+	const studentForm = document.getElementById('studentProfileForm');
+	if (studentForm) {
+		studentForm.addEventListener('submit', function(e){
+			e.preventDefault();
+			submitStudentProfileForm(e);
+		});
+		// prevent Enter in input fields from submitting (but allow textarea)
+		studentForm.addEventListener('keydown', function(e){
+			if (e.key === 'Enter' && e.target && e.target.tagName && e.target.tagName.toLowerCase() !== 'textarea') {
+				e.preventDefault();
+				// optionally submit on Enter: submitStudentProfileForm(e);
+			}
+		});
+	}
+
+	// Attach click listener to Save button (safer than inline onclick)
+	try {
+		const saveBtn = document.getElementById('saveStudentBtn');
+		if (saveBtn) {
+			saveBtn.addEventListener('click', function(e){
+				console.log('Save button clicked');
+				showStudentDebug('Save button clicked');
+				submitStudentProfileForm(e);
+			});
+		}
+	} catch (err) {
+		console.error('Error attaching save button listener', err);
+		showStudentDebug('Error attaching save button listener: ' + err.message);
+	}
+
+	// Expose submit function to window for inline onclick fallback
+	try { window.submitStudentProfileForm = submitStudentProfileForm; } catch (e) {}
+	</script>
 </body>
 </html>
-

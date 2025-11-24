@@ -15,7 +15,7 @@ $property_id = intval($_POST['property_id'] ?? 0);
 $student_id = $_SESSION['user_id'];
 $check_in_date = trim($_POST['check_in_date'] ?? '');
 $lease_length = intval($_POST['lease_length'] ?? 0);
-$notes = trim($_POST['notes'] ?? '');
+// notes removed: some schemas don't have the 'notes' column, so we no longer store it here
 
 // Validate inputs
 if ($property_id <= 0) {
@@ -41,7 +41,7 @@ if ($lease_length <= 0) {
 }
 
 // Check if property exists
-$propCheck = $conn->prepare("SELECT id, rent FROM properties WHERE id = ?");
+$propCheck = $conn->prepare("SELECT id, rent, landlord_id FROM properties WHERE id = ?");
 $propCheck->bind_param("i", $property_id);
 $propCheck->execute();
 $propResult = $propCheck->get_result();
@@ -52,20 +52,44 @@ if ($propResult->num_rows === 0) {
 }
 
 $property = $propResult->fetch_assoc();
+$landlord_id = isset($property['landlord_id']) ? (int)$property['landlord_id'] : 0;
 $propCheck->close();
+// Ensure the landlord referenced by the property exists. Do NOT use the session user id for landlord.
+if ($landlord_id <= 0) {
+    echo json_encode(['success' => false, 'message' => 'Property has no assigned landlord.']);
+    exit();
+}
+
+$landCheck = $conn->prepare("SELECT id FROM landlords WHERE id = ? LIMIT 1");
+if ($landCheck) {
+    $landCheck->bind_param('i', $landlord_id);
+    $landCheck->execute();
+    $landResult = $landCheck->get_result();
+    if (!$landResult || $landResult->num_rows === 0) {
+        echo json_encode(['success' => false, 'message' => 'Invalid landlord for this property.']);
+        exit();
+    }
+    $landCheck->close();
+} else {
+    // If landlords table or query fails, abort with clear message
+    error_log('process_booking: landlord lookup prepare failed: ' . $conn->error);
+    echo json_encode(['success' => false, 'message' => 'Server error validating landlord.']);
+    exit();
+}
 
 // Create reservations table if it doesn't exist
 $createTableSQL = "CREATE TABLE IF NOT EXISTS reservations (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id INT NOT NULL,
     property_id INT NOT NULL,
+    landlord_id INT NOT NULL,
     check_in_date DATE NOT NULL,
     lease_length INT NOT NULL,
-    notes LONGTEXT,
     status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES users(id),
-    FOREIGN KEY (property_id) REFERENCES properties(id)
+    FOREIGN KEY (property_id) REFERENCES properties(id),
+    FOREIGN KEY (landlord_id) REFERENCES landlords(id)
 )";
 
 if (!$conn->query($createTableSQL)) {
@@ -85,14 +109,16 @@ if ($bookingResult->num_rows > 0) {
 $checkBooking->close();
 
 // Insert booking into database
-$stmt = $conn->prepare("INSERT INTO reservations (student_id, property_id, check_in_date, lease_length, notes) VALUES (?, ?, ?, ?, ?)");
+// notes removed from insert to match existing DB schemas
+$stmt = $conn->prepare("INSERT INTO reservations (student_id, property_id, landlord_id, check_in_date, lease_length) VALUES (?, ?, ?, ?, ?)");
+
 
 if (!$stmt) {
     echo json_encode(['success' => false, 'message' => 'Database error: ' . $conn->error]);
     exit();
 }
 
-$stmt->bind_param("iisis", $student_id, $property_id, $check_in_date, $lease_length, $notes);
+$stmt->bind_param("iiisi", $student_id, $property_id, $landlord_id, $check_in_date, $lease_length);
 
 if ($stmt->execute()) {
     $reservation_id = $stmt->insert_id;
