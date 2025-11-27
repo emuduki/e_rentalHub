@@ -32,10 +32,10 @@ $res = $conn->query("SELECT SUM(amount) AS s FROM payments");
 if ($res && ($row = $res->fetch_assoc()) && isset($row['s'])) {
     $revenue = (float)$row['s'];
 } else {
-    // fallback: try summing reservation total_amount if payments table missing
-    $res2 = $conn->query("SELECT SUM(total_amount) AS s FROM reservations");
-    if ($res2 && ($r2 = $res2->fetch_assoc()) && isset($r2['s'])) {
-        $revenue = (float)$r2['s'];
+    // fallback: try summing reservation amount if payments table missing
+    $res2 = $conn->query("SELECT SUM(amount) AS s FROM reservations");
+    if ($res2 && ($row2 = $res2->fetch_assoc()) && isset($row2['s'])) {
+        $revenue = (float)$row2['s'];
     }
 }
 
@@ -81,6 +81,9 @@ $recent = array_slice($recent, 0, 6);
         .stat-sub { color: #10b981; font-size: 0.9rem; }
         .recent-item { padding: 0.9rem 1rem; border-radius: 8px; background: #fff; margin-bottom: 0.8rem; box-shadow: 0 2px 6px rgba(15,23,42,0.03); }
         .pending-card { border-radius: 12px; padding: 1rem; background: #fff; box-shadow: 0 6px 18px rgba(15,23,42,0.04); }
+        .pending-action-item { padding: 0.9rem; border-radius: 8px; margin-bottom: 0.8rem; }
+        .pending-action-item.review { background-color: #fffacd; }
+        .pending-action-item.view { background-color: #ffe6e6; }
     </style>
 </head>
 <body>
@@ -170,7 +173,7 @@ $recent = array_slice($recent, 0, 6);
         </div>
 
         <div class="row g-4">
-            <div class="col-md-8">
+            <div class="col-md-6">
                 <h5>Recent Activity</h5>
                 <div class="mt-3">
                     <?php if (empty($recent)): ?>
@@ -197,35 +200,31 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-md-6">
                 <h5>Pending Actions</h5>
-                <div class="mt-3 pending-card">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="mt-3">
+                    <div class="pending-action-item review d-flex justify-content-between align-items-center">
                         <div>
                             <strong>Properties awaiting approval</strong>
                             <div class="text-muted small"><?php echo $pendingProperties; ?> new listings to review</div>
                         </div>
-                        <div><button class="btn btn-outline-secondary">Review</button></div>
+                        <div><button class="btn btn-sm btn-outline-secondary">Review</button></div>
                     </div>
 
-                    <hr>
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div class="pending-action-item review d-flex justify-content-between align-items-center">
                         <div>
                             <strong>Users pending verification</strong>
                             <div class="text-muted small"><?php echo $pendingUsers; ?> users to verify</div>
                         </div>
-                        <div><button class="btn btn-outline-secondary">Review</button></div>
+                        <div><button class="btn btn-sm btn-outline-secondary">Review</button></div>
                     </div>
 
-                    <hr>
-
-                    <div class="d-flex justify-content-between align-items-center">
+                    <div class="pending-action-item view d-flex justify-content-between align-items-center">
                         <div>
                             <strong>Urgent support tickets</strong>
                             <div class="text-muted small">2 urgent issues to resolve</div>
                         </div>
-                        <div><button class="btn btn-danger">View</button></div>
+                        <div><button class="btn btn-sm btn-danger">View</button></div>
                     </div>
                 </div>
             </div>

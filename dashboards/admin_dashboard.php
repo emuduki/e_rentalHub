@@ -28,7 +28,7 @@ if ($role !== 'admin') {
 
     /* Sidebar */
     .sidebar {
-        width: 260px;
+        min-width: 260px;
         background-color: #ffffff; /* darker shade than navbar */
         padding-top: 6px 0;           /* reduced padding to fit everything */
         height: calc(100vh - 56px); /* full height minus navbar */
@@ -115,58 +115,8 @@ if ($role !== 'admin') {
         border-top: 1px solid #e9ecef;
         padding: 10px 15px;
         background-color: #fff;
-        flex-shrink: 0; /* Prevent it from being pushed offscreen */
-        margin-bottom: 18px; /* lift the bottom section slightly above the viewport bottom */
-        }
-
-        .bottom-section .d-flex {
-            align-items: center;
-        }
-
-        .bottom-section a {
-            text-decoration: none;
-            color: #000;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-            margin-top: 8px;
-        }
-
-        .bottom-section a:hover {
-            color: #12be82;
-        }
-        /* Logout Button Styling */
-        .bottom-section .btn {
-            background-color: #fff;         /* black background */
-            color: #000;                    /* white text */
-            border-radius: 8px;             /* smooth corners */
-            padding: 6px 0;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .bottom-section .btn:hover {
-            background-color: #555;      /* green hover */
-            color: #fff;
-            transform: translateY(-1px);    /* subtle lift effect */
-        }
-
-        .bottom-section .btn i {
-            font-size: 1rem;
-        }
-    
-
-    @media (max-width: 768px) {
-        .sidebar {
-            position: relative;
-            width: 100%;
-            height: auto;
-            top: 0;
-        }
-        .main-content {
-            margin-left: 0;
-            width: 100%;
-            margin-top: 20px;
+        flex-shrink: 0;
+        margin-bottom: 18px;
         }
     }
 </style>
@@ -226,7 +176,7 @@ if ($role !== 'admin') {
 </div>
 
 <!-- Main Content -->
-<div class="main-content" id="content">
+<div class="main-content" id="content" style="padding: 20px;">
     <!--Loaded dynamically-->
 </div>
 
@@ -236,34 +186,70 @@ if ($role !== 'admin') {
 document.addEventListener("DOMContentLoaded", () => {
   const sidebar = document.getElementById("sidebar");
   const toggle = document.getElementById("sidebarToggle");
+  const content = document.getElementById("content");
 
-  toggle.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-    document.querySelector(".main-content").classList.toggle("collapsed");
-  });
+  if(toggle && sidebar && content) {
+      toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        content.style.marginLeft = isCollapsed ? '0' : '260px';
+      });
+  }
 
     window.loadSection = function(section, el = null) {
-        // use absolute path to avoid relative URL 404s
-        fetch('/e_rentalHub/dashboards/sections/' + section + '.php')
+        const url = '/e_rentalHub/dashboards/sections/' + section + '.php';
+        console.debug('Loading section', section, 'from', url);
+        fetch(url, { credentials: 'same-origin' })
             .then(res => {
+                console.debug('Section fetch status:', res.status, res.statusText);
                 if (!res.ok) throw new Error('Failed to load section: ' + res.status + ' ' + res.statusText);
                 return res.text();
             })
             .then(html => {
-                document.getElementById("content").innerHTML = html;
+                // If the server returned an empty response, show a helpful message
+                if (!html || !html.trim()) {
+                    content.innerHTML = '<div class="alert alert-warning">Section returned empty content.</div>';
+                } else {
+                    content.innerHTML = html;
+
+                    // Execute any inline scripts from the injected HTML so event handlers get bound
+                    Array.from(content.querySelectorAll('script')).forEach(old => {
+                        try {
+                            const newScript = document.createElement('script');
+                            if (old.src) {
+                                newScript.src = old.src;
+                                // Ensure the script loads in same-origin context
+                                newScript.async = false;
+                            } else {
+                                newScript.text = old.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                            document.body.removeChild(newScript);
+                        } catch (err) {
+                            console.warn('Failed to execute injected script', err);
+                        }
+                    });
+                }
+
+                // Remove active from all links and add to the matching link
                 document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
-                if (el) el.classList.add("active");
+                if (el) el.classList.add('active');
             })
             .catch(err => {
                 console.error("Error loading section:", err);
-                document.getElementById("content").innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
+                content.innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
             });
     };
 
-    // Default section load — find the dashboard link by partial onclick attribute to be robust
-    const dashboardLink = document.querySelector('.sidebar a[onclick*="a_dashboard"]');
-    loadSection("a_dashboard", dashboardLink);
-
+    // Default section load: mark the link active when loading
+    // For admin, default is a_dashboard
+    const defaultLink = document.querySelector('.sidebar a[onclick*="a_dashboard"]');
+    if(defaultLink) {
+        loadSection("a_dashboard", defaultLink);
+    } else {
+        // Fallback if no link matches exactly
+        loadSection("a_dashboard");
+    }
 });
 </script>
 

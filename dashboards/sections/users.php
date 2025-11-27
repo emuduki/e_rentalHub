@@ -10,11 +10,11 @@ $students = $conn->query("
         u.email,
         s.phone,
         u.created_at,
-        (SELECT COUNT(*) FROM bookings b WHERE b.student_id = s.id) AS booking_count,
+        0 AS booking_count,
         1 AS status
     FROM students s
     JOIN users u ON s.user_id = u.user_id
-    GROUP BY s.id
+    ORDER BY s.id DESC
 ");
 
 if (!$students) {
@@ -142,6 +142,7 @@ if ($result) {
         cursor: pointer;
         display: inline-block;
         user-select: none;
+        pointer-events: auto;
     }
     .tab-btn.active{
         background:var(--card-bg);
@@ -234,6 +235,17 @@ if ($result) {
         overflow-x:auto;
     }
 
+    /* Ensure radio buttons work with labels */
+    .btn-check {
+        display: none;
+    }
+    
+    .btn-check:checked + .tab-btn {
+        background:var(--card-bg);
+        border:1px solid var(--border);
+        box-shadow:0 1px 3px rgba(0,0,0,0.08);
+    }
+
 </style>
 </head>
 <body>
@@ -245,7 +257,7 @@ if ($result) {
     <div class="d-flex gap-2 mb-3" id="usersToggleWrapper">
         <div role="tablist" aria-label="Users toggle">
                 <input type="radio" class="btn-check" name="usersToggle" id="toggleLandlords" autocomplete="off" checked>
-                <label class="tab-btn" for="toggleLandlords" id="lblLandlords" role="button" tabindex="0">Landlords</label>
+                <label class="tab-btn active" for="toggleLandlords" id="lblLandlords" role="button" tabindex="0">Landlords</label>
 
                 <input type="radio" class="btn-check" name="usersToggle" id="toggleStudents" autocomplete="off">
                 <label class="tab-btn" for="toggleStudents" id="lblStudents" role="button" tabindex="0">Students</label>
@@ -370,78 +382,44 @@ if ($result) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-    // showTab now works with labels (lblLandlords / lblStudents) and radios (toggleLandlords / toggleStudents)
+    // Inject PHP data
+    const landlordsData = <?= json_encode($landlords_with_properties, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) ?>;
+
     function showTab(tab) {
+        console.log('showTab called with:', tab);
+        
         var lblL = document.getElementById("lblLandlords");
         var lblS = document.getElementById("lblStudents");
+        var tableLandlords = document.getElementById("tableLandlords");
+        var tableStudents = document.getElementById("tableStudents");
+        
         if (lblL) lblL.classList.remove("active");
         if (lblS) lblS.classList.remove("active");
 
         if (tab === "landlords") {
             if (lblL) lblL.classList.add("active");
-            document.getElementById("tableLandlords").style.display = "block";
-            document.getElementById("tableStudents").style.display = "none";
-            var r = document.getElementById('toggleLandlords'); if (r) r.checked = true;
-        } else {
+            if (tableLandlords) tableLandlords.style.display = "block";
+            if (tableStudents) tableStudents.style.display = "none";
+            var r = document.getElementById('toggleLandlords');
+            if (r) r.checked = true;
+        } else if (tab === "students") {
             if (lblS) lblS.classList.add("active");
-            document.getElementById("tableStudents").style.display = "block";
-            document.getElementById("tableLandlords").style.display = "none";
-            var r2 = document.getElementById('toggleStudents'); if (r2) r2.checked = true;
+            if (tableStudents) tableStudents.style.display = "block";
+            if (tableLandlords) tableLandlords.style.display = "none";
+            var r = document.getElementById('toggleStudents');
+            if (r) r.checked = true;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', function(){
-        // initialize
-        showTab('landlords');
-
-        var rLand = document.getElementById('toggleLandlords');
-        var rStud = document.getElementById('toggleStudents');
-        if (rLand) rLand.addEventListener('change', function(){ if (this.checked) showTab('landlords'); });
-        if (rStud) rStud.addEventListener('change', function(){ if (this.checked) showTab('students'); });
-
-        // defensive styling to keep toggle visible and clickable
-        var wrap = document.getElementById('usersToggleWrapper');
-        if (wrap) { wrap.style.zIndex = 9999; wrap.style.position = 'relative'; wrap.style.pointerEvents = 'auto'; }
-    });
-
-    // Extra: attach click listeners to labels and an on-screen flash for visible feedback
-    function flash(msg) {
-        try {
-            var f = document.createElement('div');
-            f.textContent = msg;
-            f.style.position = 'fixed';
-            f.style.top = '70px';
-            f.style.right = '20px';
-            f.style.background = 'rgba(0,0,0,0.75)';
-            f.style.color = '#fff';
-            f.style.padding = '8px 12px';
-            f.style.borderRadius = '6px';
-            f.style.zIndex = 9999;
-            f.style.fontFamily = 'system-ui, Arial';
-            document.body.appendChild(f);
-            setTimeout(function(){ f.style.transition = 'opacity 300ms'; f.style.opacity = '0'; }, 400);
-            setTimeout(function(){ try { document.body.removeChild(f); } catch(e){} }, 800);
-        } catch(e){ console.log('flash error', e); }
-    }
-
-    document.addEventListener('DOMContentLoaded', function(){
-        var lblL = document.getElementById('lblLandlords');
-        var lblS = document.getElementById('lblStudents');
-    if (lblL) lblL.addEventListener('click', function(e){ showTab('landlords'); flash('Showing landlords'); });
-    if (lblS) lblS.addEventListener('click', function(e){ showTab('students'); flash('Showing students'); });
-        // keyboard activation for accessibility (Enter/Space)
-    if (lblL) lblL.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { showTab('landlords'); flash('Showing landlords'); } });
-    if (lblS) lblS.addEventListener('keydown', function(e){ if (e.key === 'Enter' || e.key === ' ') { showTab('students'); flash('Showing students'); } });
-    });
-
     function showLandlordProperties(landlordId) {
-        const modal = new bootstrap.Modal(document.getElementById('propertiesModal'));
+        const modalEl = document.getElementById('propertiesModal');
+        const modal = new bootstrap.Modal(modalEl);
         const content = document.getElementById('propertiesContent');
         
-        const landlords = <?= json_encode($landlords_with_properties, JSON_HEX_TAG) ?>;
-        const landlord = landlords[landlordId];
+        // Find landlord in the data object
+        const landlord = landlordsData[landlordId];
         
-        if (landlord && landlord.properties.length > 0) {
+        if (landlord && landlord.properties && landlord.properties.length > 0) {
             let html = '<div class="list-group">';
             landlord.properties.forEach(prop => {
                 html += `
@@ -460,6 +438,46 @@ if ($result) {
         
         modal.show();
     }
+
+    // Initialize listeners immediately
+    (function(){
+        // Radio button change listeners
+        var rLand = document.getElementById('toggleLandlords');
+        var rStud = document.getElementById('toggleStudents');
+        
+        if (rLand) {
+            rLand.addEventListener('change', function(){
+                if (this.checked) showTab('landlords');
+            });
+        }
+        
+        if (rStud) {
+            rStud.addEventListener('change', function(){
+                if (this.checked) showTab('students');
+            });
+        }
+
+        // Label click listeners (for better UX if radios are hidden/styled)
+        var lblL = document.getElementById('lblLandlords');
+        var lblS = document.getElementById('lblStudents');
+        
+        if (lblL) {
+            lblL.addEventListener('click', function(e){
+                e.preventDefault();
+                showTab('landlords');
+            });
+        }
+        
+        if (lblS) {
+            lblS.addEventListener('click', function(e){
+                e.preventDefault();
+                showTab('students');
+            });
+        }
+        
+        // Default state
+        showTab('landlords');
+    })();
     </script>
 </body>
 </html>
