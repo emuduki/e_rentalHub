@@ -9,7 +9,19 @@ if ($role !== 'landlord') {
     exit();
 }
 
-$landlord_id = $_SESSION['user_id'];
+// Get the REAL landlord_id from landlords table
+$logged_user_id = $_SESSION['user_id'];
+
+$getLandlord = $conn->query("SELECT id FROM landlords WHERE user_id = $logged_user_id LIMIT 1");
+$landlordData = $getLandlord->fetch_assoc();
+
+// If no landlord profile exists
+if (!$landlordData) {
+    die("Landlord profile not found. Create landlord record first.");
+}
+
+$landlord_id = $landlordData['id'];
+
 
 // Fetch all properties for this landlord (include first image and image count)
 $properties_query = $conn->query("
@@ -352,4 +364,3 @@ function getBookings($property_id, $conn) {
     
 </body>
 </html>
-

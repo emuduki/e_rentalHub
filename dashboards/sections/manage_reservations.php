@@ -2,17 +2,44 @@
 session_start();
 include("../../config/db.php");
 
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+
+// Debug point 1
+echo "<!-- Debug point 1: session started and db included -->";
+
 // ensure logged in landlord
+
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'landlord') {
-    header("Location: ../login.html");
+    echo "<!-- Debug: Role check failed, role=".$role." -->";
+    header("Location: ../../auth/login.html");
     exit();
 }
-$landlord_id = $_SESSION['user_id'] ?? null;
-if (!$landlord_id) {
+// Debug point 2
+// Resolve landlord record from session user id
+$session_user_id = $_SESSION['user_id'] ?? null;
+if (!$session_user_id) {
     echo "Unauthorized";
     exit();
 }
+
+// Look up landlord.id matching this user_id
+$llStmt = $conn->prepare("SELECT id FROM landlords WHERE user_id = ? LIMIT 1");
+if ($llStmt) {
+    $llStmt->bind_param("i", $session_user_id);
+    $llStmt->execute();
+    $llRes = $llStmt->get_result();
+    $landlordRow = $llRes->fetch_assoc();
+    $llStmt->close();
+    $landlord_id = $landlordRow['id'] ?? null;
+} else {
+    // if prepare fails, fall back to null (queries will return empty)
+    $landlord_id = null;
+}
+
+// Debug point 2 — show both the session user id and resolved landlord id
+echo "<!-- Debug point 2: session_user_id = $session_user_id, landlord_id = " . ($landlord_id ?? 'NULL') . " -->";
 
 //Handle approve/reject actions
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset ($_POST['reservation_action'], $_POST['reservation_id'])){
@@ -70,6 +97,10 @@ $countStmt = $conn->prepare("
     GROUP BY r.status
 ");
 
+if (!$countStmt) {
+    die("SQL ERROR (count prepare): " . $conn->error);
+}
+
 $countStmt->bind_param("i", $landlord_id);
 $countStmt->execute();
 $resCounts = $countStmt->get_result()->fetch_all(MYSQLI_ASSOC);
@@ -86,19 +117,45 @@ $pendingCount = $counts['pending'];
 
 // Fetch reservations for the selected tab (ordered newest first)
 $listStmt = $conn->prepare("
-    SELECT r.id, r.student_id,
-           r.start_date, r.end_date,
-           r.amount, r.status, r.created_at,
-           p.title AS property_title
+    SELECT 
+        r.id,
+        r.student_id,
+        r.check_in_date,
+        r.lease_length,
+        r.amount,
+        r.status,
+        r.created_at,
+
+        p.title AS property_title,
+        p.rent AS property_rent,
+
+        u.username AS student_username,
+        u.email AS student_email,
+
+        sp.full_name AS student_name,
+        sp.phone AS student_phone
+
     FROM reservations r
     JOIN properties p ON r.property_id = p.id
-    WHERE p.landlord_id = ? AND r.status = ?
+    JOIN users u ON r.student_id = u.user_id
+    LEFT JOIN students sp ON sp.user_id = u.user_id
+    WHERE p.landlord_id = ?
+      AND r.status = ?
     ORDER BY r.created_at DESC
 ");
+
+
+
+if (!$listStmt) {
+    die('SQL ERROR: ' . $conn->error);
+}
+
 $listStmt->bind_param("is", $landlord_id, $status);
 $listStmt->execute();
 $reservations = $listStmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $listStmt->close();
+
+
 
 // helper: human friendly "x days ago" from created_at
 function time_ago($datetime) {
@@ -130,13 +187,28 @@ $isPartial = isset($_GET['partial']) && $_GET['partial'] == '1';
 // If partial request, only return the table section
 if ($isPartial) {
     // ensure the partial view knows it's being included
-    if (!defined('DIRECT_ACCESS')) define('DIRECT_ACCESS', true);
+    define('DIRECT_ACCESS', true);
     // Start output buffer to capture just the table HTML
     ob_start();
     include 'reservation_table.php'; // partial view
     echo ob_get_clean();
     exit();
 }
+
+// ---------- DEBUG OUTPUT (only when ?debug=1 is present) ----------
+if (isset($_GET['debug']) && $_GET['debug'] == '1') {
+    header('Content-Type: text/plain; charset=utf-8');
+    echo "DEBUG MODE\n";
+    echo "Logged-in landlord_id = " . json_encode($landlord_id) . "\n";
+    echo "Status filter = " . json_encode($status) . "\n\n";
+    echo "Tab counts:\n";
+    print_r($counts);
+    echo "\nFetched reservations (count = " . count($reservations) . "):\n";
+    print_r($reservations);
+    echo "\n--- END DEBUG ---\n";
+    exit();
+}
+
 
 ?>
 
@@ -196,7 +268,7 @@ if ($isPartial) {
         <div class="icon"><i class="bi bi-clock-historyfs-4"></i></div>
         <div>
             <div class="fw-semibold">You have <?= $pendingCount ?> pending booking <?= $pendingCount>1 ? 'requests' : 'request' ?> that need your attention</div>
-            <div class="small-muted">Review and approve/reject student resavations below</div>
+            <div class="small-muted">Review and approve/reject student reservations below</div>
         </div>  
     </div>  
     <?php endif; ?>
@@ -239,7 +311,7 @@ function initializeActionForms() {
             btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
             
             // Submit form via AJAX
-            fetch('sections/manage_reservations.php', {
+            fetch('/e_rentalHub/dashboards/sections/manage_reservations.php', {
                 method: 'POST',
                 body: formData
             })
@@ -250,7 +322,7 @@ function initializeActionForms() {
                 const status = activeTab ? activeTab.dataset.status : 'pending';
                 
                 // Refresh the table content
-                return fetch(`sections/manage_reservations.php?status=${status}&partial=1`);
+                return fetch(`/e_rentalHub/dashboards/sections/manage_reservations.php?status=${status}&partial=1`);
             })
             .then(res => res.text())
             .then(html => {
@@ -296,7 +368,7 @@ function handleTabClick(e) {
     }
 
     // Fetch new table content
-    fetch(`sections/manage_reservations.php?status=${status}&partial=1`)
+    fetch(`/e_rentalHub/dashboards/sections/manage_reservations.php?status=${status}&partial=1`)
         .then(res => res.text())
         .then(html => {
             if (tableSection && html) {

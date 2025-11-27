@@ -92,10 +92,17 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 	</head>
 <body>
 	<div class="container py-4">
+		<!-- white card wrapper so this section looks like a contained panel -->
+		<div class="bg-white rounded-4 shadow-sm p-4">
 		<div class="d-flex justify-content-between align-items-center mb-3">
 			<h4 class="mb-0">Saved Properties</h4>
 			<small class="text-muted"><?= $count ?> saved</small>
 		</div>
+		<!-- short description — placed under the heading so it doesn't sit on the same line -->
+		<div class="w-100 mb-3">
+			<p class="text-muted mb-0">Properties you've saved for later viewing.</p>
+		</div>
+        
 
 		<?php if ($errorMsg): ?>
 			<div class="alert alert-danger">
@@ -163,7 +170,7 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 								</div>
 								<a href="/e_rentalHub/houses/view.php?id=<?= (int)$p['id'] ?>" class="btn btn-dark btn-sm rounded-pill">View Details</a>
 							</div>
-						</div>
+							</div>
 					</div>
 				</div>
 				<?php endforeach; ?>
@@ -171,33 +178,7 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 		</div>
 	</div>
 	<script>
-    document.addEventListener('click', async function(e) {
-        const btn = e.target.closest('.fav-btn');
-        if (!btn) return;
-        const propId = btn.getAttribute('data-prop-id');
-        if (!propId) return;
-
-        try {
-            const resp = await fetch('toggle_save_property.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: 'action=unsave&property_id=' + encodeURIComponent(propId)
-            });
-            const data = await resp.json();
-            if (data.success) {
-                // remove card from UI
-                const card = btn.closest('.col-md-6, .col-lg-4');
-                if (card) card.remove();
-            } else {
-                alert('Could not update saved state. Please try again.');
-            }
-        } catch (err) {
-            console.error(err);
-            alert('Network error. Please try again.');
-        }
-    });
+	// Saved properties relies on the global delegated handler in student_dashboard.php
 	</script>
 </body>
 </html>

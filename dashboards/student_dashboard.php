@@ -11,6 +11,30 @@ if ($role !== 'student') {
 
 $student_id = $_SESSION['user_id'];
 
+// Fetch student profile data
+$student_profile = [
+    'full_name' => $_SESSION['username'] ?? 'Student',
+    'email' => $_SESSION['email'] ?? '',
+    'avatar' => null
+];
+
+$profile_res = $conn->query("
+    SELECT full_name, email, avatar 
+    FROM students 
+    WHERE user_id = {$student_id} 
+    LIMIT 1
+");
+
+if ($profile_res && $profile_res->num_rows > 0) {
+    $student_profile = array_merge($student_profile, $profile_res->fetch_assoc());
+}
+
+$uploadsBaseUrl = "/e_rentalHub/uploads/";
+$avatarUrl = '';
+if (!empty($student_profile['avatar'])) {
+    $avatarUrl = $uploadsBaseUrl . $student_profile['avatar'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -54,6 +78,8 @@ $student_id = $_SESSION['user_id'];
             transform: translateX(-260px);
         }
         .main-content { margin-left: 260px; transition: margin-left .28s ease; }
+        /* Ensure main content sits below the fixed top navbar so headings aren't obscured */
+        .main-content { padding-top: 72px; }
         .main-content.collapsed { margin-left: 0; }
         .sidebar .nav { position: relative; z-index: 1210; }
         .sidebar .nav a { position: relative; z-index: 1211; pointer-events: auto; }
@@ -191,13 +217,13 @@ $student_id = $_SESSION['user_id'];
     <div class="sidebar" id="sidebar">
         
         <ul class="nav flex-column mt-4">
-            <li><a href="javascript:void(0);" class="active" onclick="loadSection('search_properties')"><i class="fa-solid fa-magnifying-glass me-2"></i>Search Properties</a></li>
-            <li><a href="javascript:void(0);"  onclick="loadSection('saved_properties')"><i class="fa-regular fa-heart me-2"></i>Saved</a></li>
-        <li><a href="javascript:void(0);" onclick="loadSection('my_bookings')"><i class="fa-regular fa-calendar me-2"></i>My Bookings</a></li>
+            <li><a href="javascript:void(0);" class="active" onclick="loadSection('search_properties', this)"><i class="fa-solid fa-magnifying-glass me-2"></i>Search Properties</a></li>
+            <li><a href="javascript:void(0);"  onclick="loadSection('saved_properties', this)"><i class="fa-regular fa-heart me-2"></i>Saved</a></li>
+            <li><a href="javascript:void(0);" onclick="loadSection('my_bookings', this)"><i class="fa-regular fa-calendar me-2"></i>My Bookings</a></li>
 
-            <li><a href="javascript:void(0);" onclick="loadSection('payments')"><i class="fa-solid fa-money-bill me-2"></i>Payments</a></li>
-            <li><a href="javascript:void(0);" onclick="loadSection('messages')"><i class="fa-regular fa-message me-2"></i>Messages</a></li>
-            <li><a href="javascript:void(0);" onclick="loadSection('student_profile')"><i class="bi bi-person me-2"></i>Profile</a></li>
+            <li><a href="javascript:void(0);" onclick="loadSection('payments', this)"><i class="fa-solid fa-money-bill me-2"></i>Payments</a></li>
+            <li><a href="javascript:void(0);" onclick="loadSection('messages', this)"><i class="fa-regular fa-message me-2"></i>Messages</a></li>
+            <li><a href="javascript:void(0);" onclick="loadSection('student_profile', this)"><i class="bi bi-person me-2"></i>Profile</a></li>
 
             <!-- Divider line-->
             <hr class="my-3 mx-3">
@@ -205,10 +231,16 @@ $student_id = $_SESSION['user_id'];
 
         <div class="bottom-section">
             <div class="d-flex align-items-center mb-2">
-                <i class="bi bi-person-circle fs-4 me-2"></i>
+                <?php if ($avatarUrl): ?>
+                    <img src="<?= htmlspecialchars($avatarUrl) ?>" class="rounded-circle me-2" alt="Avatar" style="width: 40px; height: 40px; object-fit: cover;">
+                <?php else: ?>
+                    <div class="rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #e9ecef; font-weight: 700; color: #6c757d; font-size: 14px;">
+                        <?= strtoupper(substr($student_profile['full_name'] ?: 'S', 0, 2)) ?>
+                    </div>
+                <?php endif; ?>
                 <div>
-                    <strong>Student</strong><br>
-                    <small class="text-muted"><?= htmlspecialchars($_SESSION['username'] ?? 'student') ?></small>
+                    <strong><?= htmlspecialchars($student_profile['full_name'] ?: 'Student') ?></strong><br>
+                    <small class="text-muted"><?= htmlspecialchars($student_profile['email'] ?: $_SESSION['username'] ?? 'student') ?></small>
                 </div>
             </div>
             <a href="../auth/logout.php" class="btn btn-dark w-100 d-flex  align-items-center justify-content-center">
@@ -243,13 +275,39 @@ document.addEventListener("DOMContentLoaded", () => {
     window.loadSection = function(section, el = null) {
         const url = '/e_rentalHub/dashboards/sections/' + section + '.php';
         console.debug('Loading section', section, 'from', url);
-        fetch(url)
+        fetch(url, { credentials: 'same-origin' })
             .then(res => {
+                console.debug('Section fetch status:', res.status, res.statusText);
                 if (!res.ok) throw new Error('Failed to load section: ' + res.status + ' ' + res.statusText);
                 return res.text();
             })
             .then(html => {
-                content.innerHTML = html;
+                console.debug('Loaded section HTML length:', html.length);
+                // If the server returned an empty response, show a helpful message
+                if (!html || !html.trim()) {
+                    content.innerHTML = '<div class="alert alert-warning">Section returned empty content.</div>';
+                } else {
+                    content.innerHTML = html;
+
+                    // Execute any inline scripts from the injected HTML so event handlers get bound
+                    Array.from(content.querySelectorAll('script')).forEach(old => {
+                        try {
+                            const newScript = document.createElement('script');
+                            if (old.src) {
+                                newScript.src = old.src;
+                                // Ensure the script loads in same-origin context
+                                newScript.async = false;
+                            } else {
+                                newScript.text = old.textContent;
+                            }
+                            document.body.appendChild(newScript);
+                            document.body.removeChild(newScript);
+                        } catch (err) {
+                            console.warn('Failed to execute injected script', err);
+                        }
+                    });
+                }
+
                 // Remove active from all links and add to the matching link
                 document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
                 if (el) el.classList.add('active');
@@ -263,6 +321,83 @@ document.addEventListener("DOMContentLoaded", () => {
     // Default section load: mark the link active when loading
     const searchLink = document.querySelector('.sidebar a[onclick*="search_properties"]');
     loadSection("search_properties", searchLink);
+
+    // Global delegated listener for save/unsave heart buttons
+    // Handles clicks for any loaded section and ensures same behavior when sections are injected via AJAX
+    document.body.addEventListener('click', async (e) => {
+        const btn = e.target.closest('.fav-btn');
+        if (!btn) return;
+
+        // Only process if button has a data-property-id attribute
+        const propId = btn.getAttribute('data-property-id') || btn.getAttribute('data-prop-id');
+        if (!propId) return;
+
+        // If the user isn't logged in the server endpoint will reject — we still attempt and allow server to respond
+        const icon = btn.querySelector('i');
+        const isSaved = btn.dataset.saved === '1' || btn.dataset.saved === 'true' || icon?.classList.contains('bi-heart-fill');
+        const action = isSaved ? 'unsave' : 'save';
+
+        // optimistic UI update
+        if (icon) {
+            if (action === 'save') {
+                icon.classList.remove('bi-heart');
+                icon.classList.add('bi-heart-fill', 'text-danger');
+            } else {
+                icon.classList.remove('bi-heart-fill', 'text-danger');
+                icon.classList.add('bi-heart');
+            }
+        }
+
+        try {
+            const resp = await fetch('/e_rentalHub/dashboards/sections/toggle_save_property.php', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'property_id=' + encodeURIComponent(propId) + '&action=' + encodeURIComponent(action)
+            });
+            const data = await resp.json();
+            if (!data.success) {
+                // revert UI
+                if (icon) {
+                    if (action === 'save') {
+                        icon.classList.remove('bi-heart-fill', 'text-danger');
+                        icon.classList.add('bi-heart');
+                    } else {
+                        icon.classList.remove('bi-heart');
+                        icon.classList.add('bi-heart-fill', 'text-danger');
+                    }
+                }
+                console.error('toggle_save_property failed', data.message);
+                alert(data.message || 'Could not update saved state.');
+                return;
+            }
+
+            // success — update dataset
+            btn.dataset.saved = action === 'save' ? '1' : '0';
+
+            // If we are on the Saved page and user unsaved the property, remove the card
+            if (action === 'unsave') {
+                const containerCard = btn.closest('.col-md-6, .col-lg-4, .booking-card');
+                // remove card only on saved_properties view — detect by existing title text
+                const pageTitle = document.querySelector('#content h4')?.textContent?.toLowerCase() || '';
+                if (pageTitle.includes('saved properties') && containerCard) containerCard.remove();
+            }
+
+        } catch (err) {
+            console.error(err);
+            // revert UI change
+            if (icon) {
+                if (action === 'save') {
+                    icon.classList.remove('bi-heart-fill', 'text-danger');
+                    icon.classList.add('bi-heart');
+                } else {
+                    icon.classList.remove('bi-heart');
+                    icon.classList.add('bi-heart-fill', 'text-danger');
+                }
+            }
+            alert('Network error. Please try again.');
+        }
+    });
 });
 </script>
 </html>

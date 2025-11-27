@@ -110,11 +110,13 @@ if ($role === 'student') {
                 $stmt->close();
                 // Fetch updated row to return to client
                 $ps = $conn->prepare("SELECT * FROM students WHERE user_id = ? LIMIT 1");
+                if (!$ps) throw new Exception("SELECT prepare failed: " . $conn->error);
                 $ps->bind_param("i", $user_id);
-                $ps->execute();
+                if (!$ps->execute()) throw new Exception("SELECT execute failed: " . $ps->error);
                 $studentRow = $ps->get_result()->fetch_assoc();
                 $ps->close();
 
+                error_log('save_profile.php: student UPDATE successful, returning data for user_id=' . $user_id . ' | fetched row: ' . json_encode($studentRow));
                 echo json_encode(['success' => true, 'message' => 'Student profile updated successfully', 'data' => $studentRow]);
                 exit();
             } else {

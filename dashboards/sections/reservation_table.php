@@ -5,13 +5,13 @@
         <p>Review and manage student reservation requests</p>
 
         <div class="table-responsive">
-            <table class="table align-middle">
+            <table class="table align-middle" style="min-width:900px;">
                 <thead>
                     <tr class="text-muted small">
                         <th>Property</th>
                         <th>Tenant</th>
-                        <th>Dates</th>
-                        <th>Amount</th>
+                        <th style="min-width:220px;">Dates</th>
+                        <th style="min-width:160px;">Amount</th>
                         <th>Status</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -20,32 +20,25 @@
                     <?php if (!empty($reservations)): ?>
                         <?php foreach ($reservations as $r):
 
-                            // Safe defaults
-                            $prop = htmlspecialchars($r['title'] ?? 'Property');
+                            $prop = htmlspecialchars($r['property_title']);
+                            $tenant = htmlspecialchars($r['student_name']);
+                            $email  = htmlspecialchars($r['student_email']);
+                            $phone  = htmlspecialchars($r['student_phone']);
 
-                            // Student details from users table
-                            $tenant = htmlspecialchars($r['name'] ?? 'Student');
-                            $email  = htmlspecialchars($r['email'] ?? '');
-                            $phone  = htmlspecialchars($r['phone_number'] ?? '');
+                            $startDate = $r['check_in_date'];
+                            $lease     = intval($r['lease_length']);
 
-                            // Reservation dates
-                            $startDate = $r['check_in_date'] ?? null;
-                            $lease     = intval($r['lease_length'] ?? 0);
-
-                            $start = $startDate ? date('d/m/Y', strtotime($startDate)) : '-';
-                            $end   = ($startDate && $lease > 0)
-                                ? date('d/m/Y', strtotime("+{$lease} months", strtotime($startDate)))
-                                : '-';
-
-                            // Amount (from property rent)
-                            $amount = $r['rent'] ?? 0;
+                            // Prefer the reservation amount (if set and >0), otherwise fall back to the property's rent
+                            $amount = (isset($r['amount']) && floatval($r['amount']) > 0)
+                                ? $r['amount']
+                                : ($r['property_rent'] ?? 0);
 
                             // Status handling
                             $stat = htmlspecialchars($r['status'] ?? 'pending');
 
                             $statusColor = 'secondary';
                             if ($stat === 'pending')  $statusColor = 'warning';
-                            if ($stat === 'approved') $statusColor = 'success';
+                            if ($stat === 'confirmed') $statusColor = 'success';
                             if ($stat === 'rejected') $statusColor = 'danger';
                             if ($stat === 'completed') $statusColor = 'dark';
 
@@ -63,13 +56,22 @@
                                 <div class="small-muted"><?= $email ?> <?= $phone ? " · $phone" : "" ?></div>
                             </td>
 
-                            <td style="min-width: 180px;">
-                                <div><?= $start ?> <span class="small-muted">to</span> <?= $end ?></div>
+                            <td style="min-width:220px;">
+
+                                <?php
+                                    // Lease end calculation
+                                    $endDate = (!empty($startDate) && $lease > 0)
+                                        ? date('Y-m-d', strtotime("+$lease months", strtotime($startDate)))
+                                        : "Not specified";
+                                ?>
+
+                                <div style="white-space:nowrap;"><strong>Check-in:</strong>&nbsp;<?= $startDate ?></div>
+                                <div style="white-space:nowrap;"><strong>Lease Ends:</strong>&nbsp;<?= $endDate ?></div>
                                 <div class="small-muted"><?= $createdAgo ?></div>
                             </td>
 
-                            <td>
-                                <div class="fw-semibold">KES <?= number_format((float)$amount, 0) ?></div>
+                            <td style="min-width:160px; white-space:nowrap;">
+                                <div class="fw-semibold">KES&nbsp;<?= number_format((float)$amount, 0) ?></div>
                             </td>
 
                             <td>
@@ -100,6 +102,10 @@
                         </tr>
 
                         <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted">No reservations found.</td>
+                        </tr>
                     <?php endif; ?>
                 </tbody>
             </table>

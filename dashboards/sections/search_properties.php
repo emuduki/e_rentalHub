@@ -315,79 +315,8 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // expose whether current user is a logged-in student
-    const isStudent = <?= (isset($_SESSION['user_id']) && $role === 'student') ? 'true' : 'false' ?>;
-    document.querySelectorAll('.fav-btn.save-property').forEach(btn => {
-        btn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            // Only allow logged-in students to like/save properties
-            if (!isStudent) {
-                // show bootstrap modal prompting login
-                const modalEl = document.getElementById('loginPromptModal');
-                if (modalEl) {
-                    const m = new bootstrap.Modal(modalEl);
-                    m.show();
-                } else {
-                    // fallback to redirect if modal missing
-                    window.location.href = '../../login.html';
-                }
-                return;
-            }
-            const propertyId = this.dataset.propertyId;
-            const icon = this.querySelector('i');
-            const isSaved = this.dataset.saved === '1';
-            
-            // Toggle classes immediately for responsive UI
-            if (isSaved) {
-                icon.classList.add('bi-heart');
-                icon.classList.remove('bi-heart-fill', 'text-danger');
-            } else {
-                icon.classList.add('bi-heart-fill', 'text-danger');
-                icon.classList.remove('bi-heart');
-            }
-            
-            try {
-                const response = await fetch('toggle_save_property.php', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded'
-                    },
-                    body: `property_id=${propertyId}&action=${isSaved ? 'unsave' : 'save'}`
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Update the saved state
-                    this.dataset.saved = isSaved ? '0' : '1';
-                } else {
-                    // Revert on failure
-                    if (isSaved) {
-                        icon.classList.add('bi-heart-fill', 'text-danger');
-                        icon.classList.remove('bi-heart');
-                    } else {
-                        icon.classList.add('bi-heart');
-                        icon.classList.remove('bi-heart-fill', 'text-danger');
-                    }
-                    console.error('Save failed:', data.message);
-                    alert('Could not update saved state. Please try again.');
-                }
-            } catch (err) {
-                // Revert on error
-                if (isSaved) {
-                    icon.classList.add('bi-heart-fill', 'text-danger');
-                    icon.classList.remove('bi-heart');
-                } else {
-                    icon.classList.add('bi-heart');
-                    icon.classList.remove('bi-heart-fill', 'text-danger');
-                }
-                console.error(err);
-                alert('Network error. Please try again.');
-            }
-        });
-    });
-});
+// We use a delegated handler attached to the dashboard root (student_dashboard.php) to handle fav buttons.
+// This file no longer binds its own DOMContentLoaded handlers so AJAX-injected content uses the central handler.
 </script>
 
 <!-- Login prompt modal shown when a guest tries to save a property -->

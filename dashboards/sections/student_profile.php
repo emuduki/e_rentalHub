@@ -60,7 +60,7 @@ if (!empty($profile['avatar'])) {
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 	<style>
-		.profile-header{background:#f8fafc;border-radius:16px;padding:24px 20px;display:flex;gap:16px;align-items:center;}
+		.profile-header{background:#ffffff;border-radius:16px;padding:24px 20px;display:flex;gap:16px;align-items:center;border:1px solid rgba(0,0,0,0.06);box-shadow:0 6px 18px rgba(0,0,0,0.04);}
 		.avatar{width:88px;height:88px;border-radius:50%;object-fit:cover;background:#e9ecef;display:flex;align-items:center;justify-content:center;font-weight:700;color:#6c757d;font-size:28px;position:relative}
 		.avatar .cam{position:absolute;right:-2px;bottom:-2px;background:#212529;color:#fff;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:pointer}
 		.btn-save{background:#000;color:#fff;padding:10px 20px;border-radius:8px;font-weight:600}
@@ -72,12 +72,12 @@ if (!empty($profile['avatar'])) {
 	</head>
 <body>
 	<div class="container py-4">
+		<div class="profile-wrapper mt-4">
+			<h4 class="fw-bold mb-2">My Profile</h4>
+			<p class="text-muted mb-4">Manage your personal information and account settings</p>
+		</div>
 		<div id="studentAlertPlaceholder"></div>
-		<!-- Debug area for quick client-side visibility while troubleshooting -->
-		<div id="studentDebug" style="font-family:monospace;white-space:pre-wrap;margin-top:8px;color:#333"></div>
-		<?php if (isset($_GET['updated'])): ?>
-		<div class="alert alert-success">Profile updated successfully.</div>
-		<?php endif; ?>
+		<!-- NOTE: server-side 'updated' messages and debug text removed — we show success via JavaScript so the page stays on Profile -->
 
 	<form id="studentProfileForm" method="POST" enctype="multipart/form-data">
 		<div class="profile-header mb-4">
@@ -91,13 +91,15 @@ if (!empty($profile['avatar'])) {
 				<input type="file" id="avatar_input" name="avatar" accept="image/*" class="d-none">
 			</div>
 			<div class="flex-grow-1">
-				<h4 class="mb-1"><input type="text" name="full_name" class="form-control form-control-sm" value="<?= htmlspecialchars($profile['full_name'] ?: '') ?>"></h4>
-				<div class="text-muted"><input type="text" name="course" class="form-control form-control-sm" value="<?= htmlspecialchars($profile['course'] ?: '') ?>" placeholder="Course / Program" style="max-width:320px"></div>
-				<small class="text-muted">Student ID: <input type="text" name="student_identifier" class="form-control form-control-sm d-inline-block" value="<?= htmlspecialchars($profile['student_identifier'] ?: '') ?>" style="width:160px"></small>
+				<!-- Static header display (abbreviated avatar + name/email), similar to landlord profile style -->
+				<h5 class="mb-1"><?= htmlspecialchars($profile['full_name'] ?: 'Student Name') ?></h5>
+				<p class="text-muted mb-1"><?= htmlspecialchars($profile['email'] ?? 'email@example.com') ?></p>
+				<p class="text-muted mb-0"><?= htmlspecialchars($profile['university'] ?: 'University / Institute') ?></p>
+				<!-- (editable fields are below in the Personal Information section) -->
 			</div>
 				<div class="ms-auto">
-					<!-- Save button: use triggerSave to ensure non-blocking handling -->
-					<button type="button" id="saveStudentBtn" class="btn btn-save" onclick="triggerSave(event)">Save Changes</button>
+					<!-- Save button: click is handled by the attached listener (no inline onclick) -->
+					<button type="button" id="saveStudentBtn" class="btn btn-save">Save Changes</button>
 				</div>
 		</div>
 
@@ -174,6 +176,11 @@ if (!empty($profile['avatar'])) {
 	<script>
 	function showStudentAlert(type, message) {
 	    const ph = document.getElementById('studentAlertPlaceholder');
+	    if (!ph) {
+	        console.error('studentAlertPlaceholder element not found');
+	        alert(message); // Fallback to browser alert
+	        return;
+	    }
 	    ph.innerHTML = `<div class="alert alert-${type} alert-dismissible" role="alert">${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>`;
 	}
 
@@ -238,9 +245,71 @@ if (!empty($profile['avatar'])) {
 			}
 
 			if (data.success) {
+				// show success notification and update header in-place (no full reload)
 				showStudentAlert('success', data.message || 'Profile saved successfully');
-				// keep UX consistent with landlord: reload to reflect updated values
-				setTimeout(() => location.reload(), 600);
+
+				// If server returned updated student data, update the header display and form fields in-place
+				if (data.data && typeof data.data === 'object') {
+					try {
+						const d = data.data;
+						const header = document.querySelector('.profile-header');
+						if (header) {
+							const nameEl = header.querySelector('h5');
+							const emailEl = header.querySelector('p.text-muted.mb-1');
+							const uniEl = header.querySelector('p.text-muted.mb-0');
+							if (d.full_name && nameEl) nameEl.textContent = d.full_name;
+							if (d.email && emailEl) emailEl.textContent = d.email;
+							if (d.university && uniEl) uniEl.textContent = d.university;
+
+							// Update avatar: if server returned 'avatar' filename, swap image or initials
+							if (d.avatar) {
+								const img = header.querySelector('img.avatar');
+								if (img) {
+									img.src = '/e_rentalHub/uploads/' + d.avatar;
+								} else {
+									const avatarDiv = header.querySelector('.avatar');
+									if (avatarDiv) avatarDiv.textContent = (d.full_name || '').toUpperCase().substr(0,2) || 'KK';
+								}
+							}
+						}
+						
+						// Also update the form fields to reflect what was saved
+						const form = document.getElementById('studentProfileForm');
+						if (form) {
+							// Map of field names in database to form input names
+							const fieldMap = {
+								'full_name': 'full_name',
+								'student_identifier': 'student_identifier',
+								'email': 'email',
+								'phone': 'phone',
+								'bio': 'bio',
+								'university': 'university',
+								'course': 'course',
+								'year_of_study': 'year_of_study',
+								'current_address': 'current_address',
+								'emergency_name': 'emergency_name',
+								'emergency_phone': 'emergency_phone'
+							};
+							
+							for (const [dbField, formField] of Object.entries(fieldMap)) {
+								if (d[dbField] !== undefined) {
+									const input = form.querySelector(`[name="${formField}"]`);
+									if (input) {
+										if (input.tagName === 'TEXTAREA') {
+											input.textContent = d[dbField] || '';
+										} else {
+											input.value = d[dbField] || '';
+										}
+									}
+								}
+							}
+						}
+					} catch (ex) {
+						console.warn('Failed to apply updated data', ex);
+					}
+				}
+
+				// do not reload the parent page; keep the user on the profile
 			} else {
 				showStudentAlert('danger', data.message || 'Failed to save profile');
 			}
@@ -254,17 +323,6 @@ if (!empty($profile['avatar'])) {
 				saveBtn.disabled = false;
 				if (originalBtnText !== null) saveBtn.innerHTML = originalBtnText;
 			}
-		});
-	}
-			})
-			.finally(() => {
-				if (saveBtn) {
-					saveBtn.disabled = false;
-					if (originalBtnText !== null) saveBtn.innerHTML = originalBtnText;
-				}
-			});
-			// call with a dummy event that has preventDefault to avoid native submit
-			submitStudentProfileForm({ preventDefault: function(){} });
 		});
 	}
 

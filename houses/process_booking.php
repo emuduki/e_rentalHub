@@ -85,6 +85,7 @@ $createTableSQL = "CREATE TABLE IF NOT EXISTS reservations (
     landlord_id INT NOT NULL,
     check_in_date DATE NOT NULL,
     lease_length INT NOT NULL,
+    amount DECIMAL(10,2) DEFAULT NULL,
     status VARCHAR(50) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES users(id),
@@ -110,7 +111,10 @@ $checkBooking->close();
 
 // Insert booking into database
 // notes removed from insert to match existing DB schemas
-$stmt = $conn->prepare("INSERT INTO reservations (student_id, property_id, landlord_id, check_in_date, lease_length) VALUES (?, ?, ?, ?, ?)");
+// Determine booking amount (use property's rent by default)
+$amount = isset($property['rent']) ? floatval($property['rent']) : 0.0;
+
+$stmt = $conn->prepare("INSERT INTO reservations (student_id, property_id, landlord_id, check_in_date, lease_length, amount) VALUES (?, ?, ?, ?, ?, ?)");
 
 
 if (!$stmt) {
@@ -118,7 +122,7 @@ if (!$stmt) {
     exit();
 }
 
-$stmt->bind_param("iiisi", $student_id, $property_id, $landlord_id, $check_in_date, $lease_length);
+$stmt->bind_param("iiisid", $student_id, $property_id, $landlord_id, $check_in_date, $lease_length, $amount);
 
 if ($stmt->execute()) {
     $reservation_id = $stmt->insert_id;
