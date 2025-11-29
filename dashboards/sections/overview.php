@@ -299,9 +299,10 @@ $revenue_growth = 0;
     </style>
     </head>
 
-    <body class="p-4">
-        <h4 class="fw-bold mb-2">Landlord Dashboard </h4>
-        <p class="text-muted mb-4">Manage your properties and bookings</p>
+    <body class="bg-light">
+        <div class="container-fluid" style="padding-top: 56px;">
+            <h4 class="fw-bold mb-2">Landlord Dashboard </h4>
+            <p class="text-muted mb-4">Manage your properties and bookings</p>
 
         <!--Top Stat Cards-->
         <div class="row g-3 mb-4">

@@ -88,7 +88,7 @@ $stmt->close();
     .small-muted { color:#6c757d; }
 </style>
 
-<div class="container mt-5 pt-4">
+<div class="container" style="padding-top: 56px;">
 
 
     <h3 class="fw-bold">My Bookings</h3>

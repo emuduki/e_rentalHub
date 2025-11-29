@@ -260,8 +260,9 @@ if (isset($_GET['debug']) && $_GET['debug'] == '1') {
 </head>
 
 <body class="bg-light">
-    <h2 class="fw-bold">Student Reservations</h2>
-    <p class="text-muted mb-4">Approve or reject student booking requests and manage confirmed bookings</p>
+    <div class="container-fluid" style="padding-top: 56px;">
+        <h2 class="fw-bold">Student Reservations</h2>
+        <p class="text-muted mb-4">Approve or reject student booking requests and manage confirmed bookings</p>
 
     <?php if ($pendingCount > 0): ?>
     <div class="banner mb-4">

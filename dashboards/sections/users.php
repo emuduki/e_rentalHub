@@ -4,16 +4,18 @@ include(__DIR__ . "/../../config/db.php");
 
 // Fetch students with their booking count
 $students = $conn->query("
-    SELECT 
+    SELECT
         s.id AS student_id,
-        u.username,
-        u.email,
+        s.full_name,
+        s.email,
         s.phone,
-        u.created_at,
-        0 AS booking_count,
+        s.created_at,
+        COUNT(r.id) AS booking_count,
         1 AS status
     FROM students s
     JOIN users u ON s.user_id = u.user_id
+    LEFT JOIN reservations r ON r.student_id = u.user_id
+    GROUP BY s.id, s.full_name, s.email, s.phone, s.created_at
     ORDER BY s.id DESC
 ");
 
@@ -120,7 +122,7 @@ if ($result) {
     body{
         background:var(--bg);
         font-family:system-ui, -apple-system, "Segoe UI", Roboto;
-        padding: 56px;
+        padding: 56px 20px 20px 20px;
     }
 
     /* Page title */
@@ -286,9 +288,9 @@ if ($result) {
         <table class="table align-middle">
             <thead>
                 <tr>
-                    <th style="min-width:120px">ID</th>
-                    <th style="min-width:200px">Name</th>
-                    <th style="min-width:220px">Email</th>
+                    <th style="min-width:100px">ID</th>
+                    <th style="min-width:150px">Name</th>
+                    <th style="min-width:180px">Email</th>
                     <th style="min-width:160px">Phone</th>
                     <th style="min-width:120px">Join Date</th>
                     <th style="min-width:120px">Properties</th>
@@ -311,7 +313,7 @@ if ($result) {
                             </td>
                             <td>
                                 <span class="status-badge <?= ($row['status'] == 1 ? 'verified' : 'pending') ?>">
-                                    <?= ($row['status'] == 1 ? 'Verified' : 'Pending') ?>
+                                    <?= ($row['status'] == 1 ? 'Active' : 'Pending') ?>
                                 </span>
                             </td>
                             <td>
@@ -347,7 +349,14 @@ if ($result) {
         <table class="table align-middle">
             <thead>
                 <tr>
-                    <th>ID</th><th>Username</th><th>Email</th><th>Phone</th><th>Join Date</th><th>Bookings</th><th>Status</th><th>Actions</th>
+                    <th style="min-width:100px">ID</th>
+                    <th style="min-width:150px">Full_Name</th>
+                    <th style="min-width:180px">Email</th>
+                    <th style="min-width:140px">Phone</th>
+                    <th style="min-width:120px">Join Date</th>
+                    <th style="min-width:120px">Bookings</th>
+                    <th style="min-width:120px">Status</th>
+                    <th style="min-width:140px">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -355,7 +364,7 @@ if ($result) {
                     <?php while($row = $students->fetch_assoc()): ?>
                     <tr>
                         <td><strong><?= 'S' . str_pad(htmlspecialchars($row['student_id']), 3, '0', STR_PAD_LEFT) ?></strong></td>
-                        <td><?= htmlspecialchars($row['username'] ?? 'N/A') ?></td>
+                        <td><?= htmlspecialchars($row['full_name'] ?? 'N/A') ?></td>
                         <td><?= htmlspecialchars($row['email']) ?></td>
                         <td><?= htmlspecialchars($row['phone'] ?? 'N/A') ?></td>
                         <td><?= htmlspecialchars($row['created_at'] ?? 'N/A') ?></td>
@@ -364,7 +373,7 @@ if ($result) {
                         </td>
                         <td>
                             <span class="status-badge <?= ($row['status'] == 1 ? 'verified' : 'pending') ?>">
-                                <?= ($row['status'] == 1 ? 'Verified' : 'Pending') ?>
+                                <?= ($row['status'] == 1 ? 'Active' : 'Pending') ?>
                             </span>
                         </td>
                         <td>

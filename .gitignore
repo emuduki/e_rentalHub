@@ -1,0 +1,8 @@
+# Ignore sensitive files
+e_rentalhub.sql
+
+# Ignore environment files
+.env
+
+# Ignore vendor directories
+/vendor/

@@ -153,8 +153,8 @@ if ($role !== 'admin') {
     <ul class="nav flex-column mt-4">
         <li><a href="javascript:void(0);" class="active" onclick="loadSection('a_dashboard', this)"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('users', this)"><i class="bi bi-people me-2"></i>Users</a></li>
-        <li><a href="javascript:void(0);"  onclick="loadSection('properties', this)"><i class="bi bi-building me-2"></i>Properties</a></li>
-        <li><a href="javascript:void(0);"  onclick="loadSection('bookings', this)"><i class="bi bi-calendar-check me-2"></i>Bookings</a></li>
+        <li><a href="javascript:void(0);"  onclick="loadSection('a_properties', this)"><i class="bi bi-building me-2"></i>Properties</a></li>
+        <li><a href="javascript:void(0);"  onclick="loadSection('a_bookings', this)"><i class="bi bi-calendar-check me-2"></i>Bookings</a></li>
         <li><a href="javascript:void(0);"  onclick="loadSection('financials', this)"><i class="bi bi-cash-stack me-2"></i>Financial</a></li>
         <li><a href="javascript:void(0);" onclick="loadSection('support', this)"><i class="bi bi-chat-dots me-2"></i>Support</a></li>
         <li><a href="javascript:void(0);" onclick="loadSection('settings', this)"><i class="bi bi-gear me-2"></i>Settings</a></li>
