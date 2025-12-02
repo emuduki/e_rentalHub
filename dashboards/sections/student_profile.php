@@ -5,12 +5,12 @@ include("../../config/db.php");
 // Only students can view/edit this
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'student') {
-	header("Location: ../login.html");
+	header("Location: ../index.html");
 	exit();
 }
 $studentUserId = (int)($_SESSION['user_id'] ?? 0);
 if ($studentUserId <= 0) {
-	header("Location: ../login.html");
+	header("Location: ../index.html");
 	exit();
 }
 

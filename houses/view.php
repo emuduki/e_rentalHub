@@ -103,29 +103,33 @@ if (empty($imageUrls)) {
         .image-gallery {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 10px;
-            margin-bottom: 2rem;
+            gap: 12px;
         }
+
         .main-image {
             width: 100%;
             height: 500px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+
         .side-images {
             display: grid;
             grid-template-rows: repeat(3, 1fr);
-            gap: 10px;
+            gap: 12px;
         }
+
         .side-image {
             width: 100%;
-            height: 100%;
-            min-height: 160px;
+            height: 160px;
             object-fit: cover;
-            border-radius: 10px;
+            border-radius: 12px;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
+
         .property-info {
             background: white;
             padding: 2rem;
@@ -179,16 +183,20 @@ if (empty($imageUrls)) {
             object-fit: contain;
         }
         @media (max-width: 768px) {
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
             .image-gallery {
                 grid-template-columns: 1fr;
             }
             .side-images {
                 grid-template-columns: repeat(3, 1fr);
-                grid-template-rows: 1fr;
+                grid-template-rows: auto;
             }
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
+            .side-image {
+                height: 120px;
             }
+            
         }
     </style>
 </head>
@@ -214,14 +222,12 @@ if (empty($imageUrls)) {
                 <?php for ($i = 1; $i < min(4, count($imageUrls)); $i++): ?>
                     <img src="<?= htmlspecialchars($imageUrls[$i]) ?>" alt="Property image <?= $i ?>" class="side-image" onclick="openImageModal(<?= $i ?>)">
                 <?php endfor; ?>
-                <?php if (count($imageUrls) < 4): ?>
+            </div>
                     <?php for ($i = count($imageUrls); $i < 4; $i++): ?>
-                        <div class="side-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                        <div class="side-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af; border: 1px solid #ddd;">
                             <i class="bi bi-image" style="font-size: 2rem;"></i>
                         </div>
                     <?php endfor; ?>
-                <?php endif; ?>
-            </div>
         </div>
         <?php endif; ?>
 

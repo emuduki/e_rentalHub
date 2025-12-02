@@ -42,14 +42,14 @@ $hasSavedTable = ($checkTable && $checkTable->num_rows > 0);
 
 // Build image subquery - only if table exists
 if ($hasImagesTable) {
-    $imageOrderBy = $hasUploadedAt ? "pi.uploaded_at DESC, pi.id DESC" : "pi.id DESC";
-    $imageSubquery = "(SELECT pi.image_path 
-           FROM property_images pi 
-          WHERE pi.property_id = p.id 
-          ORDER BY $imageOrderBy
-          LIMIT 1) AS image_path";
+    $orderBy = $hasUploadedAt ? "uploaded_at DESC, id DESC" : "id DESC";
+    $imageSubquery = "(SELECT GROUP_CONCAT(image_path ORDER BY $orderBy SEPARATOR ',')
+           FROM property_images
+           WHERE property_id = p.id
+           ORDER BY $orderBy
+           LIMIT 4) AS image_paths";
 } else {
-    $imageSubquery = "NULL AS image_path";
+    $imageSubquery = "NULL AS image_paths";
 }
 
 // Build saved properties join - only if table exists
@@ -244,35 +244,44 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
                     <div class="alert alert-info">No available properties match your search.</div>
                 </div>
             <?php else: ?>
-				<?php foreach ($properties as $p): 
-					// Resolve image: prefer property-specific image using absolute URL, else fallbacks, else SVG placeholder
-					$img = null;
-					if (!empty($p['image_path']) && $uploadsFsDir) {
-						$fsCandidate = $uploadsFsDir . DIRECTORY_SEPARATOR . $p['image_path'];
-						if (file_exists($fsCandidate)) {
-							$img = $uploadsBaseUrl . $p['image_path'];
+				<?php foreach ($properties as $p):
+					// Resolve images: split comma-separated paths and validate each
+					$imageUrls = [];
+					if (!empty($p['image_paths'])) {
+						$imagePaths = explode(',', $p['image_paths']);
+						foreach ($imagePaths as $path) {
+							$path = trim($path);
+							if (!empty($path) && $uploadsFsDir) {
+								$fsCandidate = $uploadsFsDir . DIRECTORY_SEPARATOR . $path;
+								if (file_exists($fsCandidate)) {
+									$imageUrls[] = $uploadsBaseUrl . $path;
+								}
+							}
 						}
 					}
-					if ($img === null && $uploadsFsDir) {
-						// try a common upload image if present
+
+					// If no valid images, use fallbacks
+					if (empty($imageUrls) && $uploadsFsDir) {
 						$fallback1Name = "pexels-vince-2227832.jpg";
 						$fallback2Name = "img.avif";
 						if (file_exists($uploadsFsDir . DIRECTORY_SEPARATOR . $fallback1Name)) {
-							$img = $uploadsBaseUrl . $fallback1Name;
+							$imageUrls[] = $uploadsBaseUrl . $fallback1Name;
 						} elseif (file_exists($uploadsFsDir . DIRECTORY_SEPARATOR . $fallback2Name)) {
-							$img = $uploadsBaseUrl . $fallback2Name;
+							$imageUrls[] = $uploadsBaseUrl . $fallback2Name;
 						}
 					}
-					if ($img === null) {
-						// inline SVG placeholder (data URI)
+
+					// If still no images, use SVG placeholder
+					if (empty($imageUrls)) {
 						$svg = '<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500"><rect width="100%" height="100%" fill="#e9ecef"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#6c757d" font-family="Arial, Helvetica, sans-serif" font-size="28">No image available</text></svg>';
-						$img = 'data:image/svg+xml;utf8,' . rawurlencode($svg);
+						$imageUrls[] = 'data:image/svg+xml;utf8,' . rawurlencode($svg);
 					}
+
 					$title = htmlspecialchars($p['title']);
 					$loc = htmlspecialchars($p['city'].", ".$p['address']);
 					$beds = (int)($p['bedrooms'] ?? 0);
 					$baths = max(1, floor(max(1,$beds)/2));
-					$area = htmlspecialchars($p['area'] ?? '—');
+					$area = htmlspecialchars($p['area'] ?? '...');
 					$type = htmlspecialchars($p['type'] ?? 'Apartment');
 					$price = number_format((float)$p['rent']);
 					$isSaved = $p['is_saved'] == 1;
@@ -280,11 +289,28 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
                 <div class="col-md-6 col-lg-4 mb-4">
                     <div class="card property-card">
                         <div class="position-relative">
-                            <img src="<?= $img ?>" alt="<?= $title ?>" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-family=%22Arial,Helvetica,sans-serif%22 font-size=%2228%22%3ENo image available%3C/text%3E%3C/svg%3E'">
+                            <?php if (count($imageUrls) > 1): ?>
+                                <div id="carousel-<?= (int)$p['id'] ?>" class="carousel slide">
+                                    <div class="carousel-inner">
+                                        <?php foreach ($imageUrls as $index => $imgUrl): ?>
+                                            <div class="carousel-item <?= $index === 0 ? 'active' : '' ?>">
+                                                <img src="<?= htmlspecialchars($imgUrl) ?>" class="d-block w-100" alt="<?= $title ?>" style="height: 220px; object-fit: cover;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-family=%22Arial,Helvetica,sans-serif%22 font-size=%2228%22%3ENo image available%3C/text%3E%3C/svg%3E'">
+                                            </div>
+                                        <?php endforeach; ?>
+                                    </div>
+                                    <div class="carousel-indicators">
+                                        <?php for ($i = 0; $i < count($imageUrls); $i++): ?>
+                                            <button type="button" data-bs-target="#carousel-<?= (int)$p['id'] ?>" data-bs-slide-to="<?= $i ?>" class="<?= $i === 0 ? 'active' : '' ?>" aria-current="true" aria-label="Slide <?= $i + 1 ?>"></button>
+                                        <?php endfor; ?>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <img src="<?= htmlspecialchars($imageUrls[0]) ?>" alt="<?= $title ?>" style="height: 220px; object-fit: cover;" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22800%22 height=%22500%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23e9ecef%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%236c757d%22 font-family=%22Arial,Helvetica,sans-serif%22 font-size=%2228%22%3ENo image available%3C/text%3E%3C/svg%3E'">
+                            <?php endif; ?>
 							<span class="badge bg-light text-dark prop-badge"><?= $type ?></span>
-							<button type="button" class="btn btn-light fav-btn shadow-sm save-property" 
-                                    data-property-id="<?= (int)$p['id'] ?>" 
-                                    data-saved="<?= $isSaved ? '1' : '0' ?>" 
+							<button type="button" class="btn btn-light fav-btn shadow-sm save-property"
+                                    data-property-id="<?= (int)$p['id'] ?>"
+                                    data-saved="<?= $isSaved ? '1' : '0' ?>"
                                     aria-label="Save property">
 								<i class="bi <?= $isSaved ? 'bi-heart-fill text-danger' : 'bi-heart' ?>"></i>
 							</button>
@@ -315,6 +341,23 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle carousel hover for property cards
+    document.querySelectorAll('.property-card').forEach(card => {
+        const carousel = card.querySelector('.carousel');
+        if (carousel) {
+            const carouselInstance = new bootstrap.Carousel(carousel, {
+                interval: false
+            });
+            card.addEventListener('mouseenter', () => {
+                carouselInstance.next();
+            });
+            card.addEventListener('mouseleave', () => {
+                carouselInstance.to(0);
+            });
+        }
+    });
+});
 // We use a delegated handler attached to the dashboard root (student_dashboard.php) to handle fav buttons.
 // This file no longer binds its own DOMContentLoaded handlers so AJAX-injected content uses the central handler.
 </script>

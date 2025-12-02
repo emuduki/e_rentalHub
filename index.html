@@ -441,9 +441,21 @@
         .step-item {
             text-align: center;
             padding: 1rem;
+            background-color: rgba(0,0,0,0.05);
+            border-radius: 1rem;
+            position: relative;
+            transition: all 0.3s;
+            min-height: 300px;
+        }
+
+        .step-item:hover {
+            border: 2px solid var(--primary-blue);
         }
 
         .step-number {
+            position: absolute;
+            top: 10px;
+            right: 10px;
             width: 60px;
             height: 60px;
             background-color: var(--primary-blue);
@@ -454,7 +466,6 @@
             justify-content: center;
             font-size: 1.5rem;
             font-weight: 700;
-            margin: 0 auto 1.5rem;
         }
 
         .step-icon {
@@ -871,11 +882,11 @@
                         <div class="d-flex align-items-center">
                             <i class="bi bi-geo-alt-fill text-primary me-2" style="font-size: 1.25rem;"></i>
                             <select class="location-select">
-                                <option>Near University</option>
-                                <option>University of Nairobi</option>
-                                <option>Kenyatta University</option>
-                                <option>Strathmore University</option>
-                                <option>United States International University</option>
+                                <option>Property Type</option>
+                                <option>Studio</option>
+                                <option>Bedsitter</option>
+                                <option>Single Room</option>
+                                <option>Apartment</option>
                             </select>
                         </div>
                         <!--Advanced Features-->
@@ -893,30 +904,6 @@
             </div>
         </div>
     </section>
-
-    <!-- Statistics Section -->
-    <section class="stats-section">
-        <div class="container">
-            <div class="row">
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-number">1,200+</div>
-                    <div class="stat-label">Properties</div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-number">2,800+</div>
-                    <div class="stat-label">Students</div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-number">500+</div>
-                    <div class="stat-label">Landlords</div>
-                </div>
-                <div class="col-6 col-md-3 stat-item">
-                    <div class="stat-number">15+</div>
-                    <div class="stat-label">Universities</div>
-                </div>
-            </div>
-        </div>
-        </section>
 
 		<!-- Recent Listed Properties Section -->
 	<div class="container text-center">
@@ -1493,6 +1480,23 @@
 			.then(r => r.text())
 			.then(html => {
 				row.innerHTML = html;
+				// Initialize carousels after HTML is inserted
+				const carousels = row.querySelectorAll('.carousel');
+				carousels.forEach(function(carousel) {
+					const bsCarousel = new bootstrap.Carousel(carousel, {
+						interval: false,
+						ride: false
+					});
+
+					// Add hover event listeners
+					carousel.addEventListener('mouseenter', function() {
+						bsCarousel.cycle();
+					});
+
+					carousel.addEventListener('mouseleave', function() {
+						bsCarousel.pause();
+					});
+				});
 			})
 			.catch(() => {
 				const loading = document.getElementById('recentLoading');

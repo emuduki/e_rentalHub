@@ -5,11 +5,21 @@ include("../config/db.php");
 // Role normalization
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'landlord') {
-    header("Location: ../login.html");
+    header("Location: ../index.html");
     exit();
 }
 
-$landlord_id = $_SESSION['user_id'];
+$user_id = $_SESSION['user_id'];
+
+// Get the landlord record
+$landlord_query = "SELECT id FROM landlords WHERE user_id = '$user_id'";
+$landlord_result = $conn->query($landlord_query);
+if ($landlord_result->num_rows === 0) {
+    echo "Landlord profile not found.";
+    exit();
+}
+$landlord = $landlord_result->fetch_assoc();
+$landlord_id = $landlord['id'];
 
 // Fetch counts
 $totalProperties = $conn->query("SELECT COUNT(*) AS total FROM properties WHERE landlord_id = $landlord_id")->fetch_assoc()['total'];
@@ -136,7 +146,7 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
             box-sizing: border-box; /* ensures padding is included in width */
             transition: all 0.3s ease;
         }
-        .upload-box {
+        .drag-area {
             border: 2px dashed rgba(0,0,0,0.15);
             border-radius: 12px;
             padding: 32px;
@@ -145,9 +155,14 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
             transition: .2s;
         }
 
-        .upload-box:hover {
+        .drag-area:hover {
             border-color: rgba(0,0,0,0.4);
             background: rgba(0,0,0,0.05);
+        }
+
+        .drag-area.drag-over {
+            border-color: #12be82;
+            background: rgba(18, 190, 130, 0.1);
         }
 
         .drag-area input {
@@ -166,6 +181,41 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
         #addPropertyModal .modal-dialog {
             max-width: 50%; /* Adjust as needed (e.g. 50%, 700px, etc.) */
             margin: auto; /* Center the modal */
+        }
+
+        .upload-box {
+            border: 2px dashed rgba(0,0,0,0.15);
+            border-radius: 12px;
+            padding: 32px;
+            background: rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: .2s;
+        }
+
+        .upload-box:hover {
+            border-color: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .drag-area input {
+            cursor: pointer;
+        }
+        /* Ensure modal displays above the fixed navbar/sidebar which use high z-index values */
+        .modal-backdrop {
+            z-index: 1110 !important;
+        }
+        .modal {
+            z-index: 1120 !important;
+        }
+
+
+        .upload-box:hover {
+            border-color: rgba(0,0,0,0.4);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .drag-area input {
+            cursor: pointer;
         }
        
 
@@ -260,6 +310,7 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
                                 <small class="text-muted">Up to 5 images (JPG, PNG, GIF)</small>
                                 <input type="file" id="imageUploadInput" name="property_images[]" multiple accept="image/*" class="form-control mt-3">
                             </div>
+                            <div id="selectedImages"></div>
                         </div>
                         <div class="row g-3">
                             <div class="col-md-12">
@@ -429,9 +480,121 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <script>
+let selectedFiles = [];
+
+const dragArea = document.querySelector('.drag-area');
+const fileInput = document.getElementById('imageUploadInput');
+
+// Prevent default drag behaviors
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dragArea.addEventListener(eventName, preventDefaults, false);
+    document.body.addEventListener(eventName, preventDefaults, false);
+});
+
+// Highlight drop area when item is dragged over it
+['dragenter', 'dragover'].forEach(eventName => {
+    dragArea.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dragArea.addEventListener(eventName, unhighlight, false);
+});
+
+// Handle dropped files
+dragArea.addEventListener('drop', handleDrop, false);
+
+// Handle click to open file dialog
+dragArea.addEventListener('click', () => {
+    fileInput.click();
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+function highlight(e) {
+    dragArea.classList.add('drag-over');
+}
+
+function unhighlight(e) {
+    dragArea.classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    handleFiles(files);
+}
+
+function handleFiles(files) {
+    const fileArray = Array.from(files);
+    // Add new files to the selectedFiles array
+    selectedFiles = selectedFiles.concat(fileArray);
+    updateSelectedImagesList();
+}
+
+fileInput.addEventListener('change', function(e) {
+    const files = Array.from(e.target.files);
+    // Add new files to the selectedFiles array
+    selectedFiles = selectedFiles.concat(files);
+    updateSelectedImagesList();
+    // Reset the input to allow selecting the same files again or fresh selection
+    fileInput.value = '';
+});
+
+function updateSelectedImagesList() {
+    const selectedImagesDiv = document.getElementById('selectedImages');
+    selectedImagesDiv.innerHTML = '';
+
+    if (selectedFiles.length > 0) {
+        const list = document.createElement('ul');
+        list.className = 'list-group list-group-flush';
+
+        selectedFiles.forEach((file, i) => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            const span = document.createElement('span');
+            span.textContent = file.name;
+            li.appendChild(span);
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'btn btn-sm btn-outline-danger';
+            removeBtn.textContent = 'Remove';
+            removeBtn.onclick = () => {
+                selectedFiles.splice(i, 1);
+                updateSelectedImagesList();
+            };
+            li.appendChild(removeBtn);
+            list.appendChild(li);
+        });
+
+        selectedImagesDiv.appendChild(list);
+    }
+}
+</script>
+
+<script>
 document.getElementById("propertyForm").addEventListener("submit", function(e) {
     e.preventDefault();
-    const formData = new FormData(this);
+    const formData = new FormData();
+
+    // Append all form fields manually, excluding file inputs
+    const form = this;
+    const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
+    inputs.forEach(input => {
+        if (input.type === 'checkbox') {
+            if (input.checked) {
+                formData.append(input.name, input.value);
+            }
+        } else {
+            formData.append(input.name, input.value);
+        }
+    });
+
+    // Append selected files to formData
+    selectedFiles.forEach((file, index) => {
+        formData.append('property_images[]', file);
+    });
 
     fetch("add_property.php", {
         method: "POST",
@@ -442,9 +605,11 @@ document.getElementById("propertyForm").addEventListener("submit", function(e) {
         if (data.trim() === "success") {
             alert("Property added successfully!");
             document.getElementById("propertyForm").reset();
+            selectedFiles = [];
+            updateSelectedImagesList();
             const modal = bootstrap.Modal.getInstance(document.getElementById("addPropertyModal"));
             modal.hide();
-            
+
             // Reload the current section if it's my_properties, otherwise reload overview
             const activeLink = document.querySelector('.sidebar ul li a.active');
             if (activeLink && activeLink.getAttribute('onclick') && activeLink.getAttribute('onclick').includes('my_properties')) {

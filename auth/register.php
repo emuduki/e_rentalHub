@@ -67,7 +67,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $stmt->bind_param('ssss', $username, $email, $hashed, $role);
 
     if ($stmt->execute()) {
-        echo 'Registration successful! <a href="../login.html">Login</a>';
+        echo 'Registration successful! <a href="../index.html">Login</a>';
     } else {
         echo '<p style="color:red">Error: ' . htmlspecialchars($stmt->error) . '</p>';
     }

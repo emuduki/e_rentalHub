@@ -5,7 +5,7 @@ include("../config/db.php");
 // Role normalization
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'admin') {
-    header("Location: ../login.html");
+    header("Location: ../index.html");
     exit();
 }
 

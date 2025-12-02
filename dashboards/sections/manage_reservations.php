@@ -13,7 +13,7 @@ echo "<!-- Debug point 1: session started and db included -->";
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'landlord') {
     echo "<!-- Debug: Role check failed, role=".$role." -->";
-    header("Location: ../../auth/login.html");
+    header("Location: ../../index.html");
     exit();
 }
 // Debug point 2
@@ -220,13 +220,12 @@ if (isset($_GET['debug']) && $_GET['debug'] == '1') {
 <title>Manage Reservations</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<style>
-    body {
+    <style>
+        body {
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             background-color: #f5f5f5;
-            padding-top: 56px;
             font-family: 'Inter', 'Segoe UI', sans-serif;
         }
     .container-top { max-width: 1100px; margin: 32px auto; }
@@ -259,9 +258,9 @@ if (isset($_GET['debug']) && $_GET['debug'] == '1') {
 
 </head>
 
-<body class="bg-light">
-    <div class="container-fluid" style="padding-top: 56px;">
-        <h2 class="fw-bold">Student Reservations</h2>
+<body class="bg-light pt-7">
+    <div class="container-fluid">
+        <h4 class="fw-bold mb-2 mt-5">Student Reservations</h4>
         <p class="text-muted mb-4">Approve or reject student booking requests and manage confirmed bookings</p>
 
     <?php if ($pendingCount > 0): ?>

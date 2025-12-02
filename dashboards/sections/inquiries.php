@@ -4,11 +4,20 @@ include("../../config/db.php");
 
 // Ensure landlord is logged in
 if (!isset($_SESSION['user_id'])) {
-    header("Location: ../../login.html");
+    header("Location: ../../index.html");
     exit();
 }
 
-$landlord_id = $_SESSION['user_id'];
+// Get the landlord record using the user_id from session
+$user_id = $_SESSION['user_id'];
+$landlord_query = "SELECT id FROM landlords WHERE user_id = '$user_id'";
+$landlord_result = $conn->query($landlord_query);
+if ($landlord_result->num_rows === 0) {
+    echo "Landlord profile not found.";
+    exit();
+}
+$landlord = $landlord_result->fetch_assoc();
+$landlord_id = $landlord['id'];
 
 // ✅ Fetch inquiry statistics safely
 

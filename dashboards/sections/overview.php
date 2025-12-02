@@ -5,7 +5,7 @@ include("../../config/db.php");
 //  Role normalization
 $role = strtolower(trim($_SESSION["role"] ?? ''));
 if ($role !== 'landlord') {
-    header("Location: ../auth/login.html");
+    header("Location: ../index.html");
     exit();
 }
 
@@ -104,7 +104,6 @@ $revenue_growth = 0;
             display: flex;
             flex-direction: column;
             background-color: #f5f5f5;
-            padding-top: 56px;
         }
         .stat-card,
         .start-card {
@@ -300,9 +299,9 @@ $revenue_growth = 0;
     </head>
 
     <body class="bg-light">
-        <div class="container-fluid" style="padding-top: 56px;">
-            <h4 class="fw-bold mb-2">Landlord Dashboard </h4>
-            <p class="text-muted mb-4">Manage your properties and bookings</p>
+    <div class="container-fluid" style="padding-top: 56px;">
+        <h4 class="fw-bold mb-2">Landlord Dashboard</h4>
+        <p class="text-muted mb-4">Manage your properties and bookings</p>
 
         <!--Top Stat Cards-->
         <div class="row g-3 mb-4">

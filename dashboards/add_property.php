@@ -10,14 +10,16 @@ if ($role !== 'landlord') {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Get landlord_id from session if not in POST
-    $landlord_id = isset($_POST['landlord_id']) ? intval($_POST['landlord_id']) : $_SESSION['user_id'];
-    
-    // Validate that the landlord_id matches the session
-    if ($landlord_id != $_SESSION['user_id']) {
-        echo "error: Unauthorized access";
+    // Get the landlord record using the user_id from session
+    $user_id = $_SESSION['user_id'];
+    $landlord_query = "SELECT id FROM landlords WHERE user_id = '$user_id'";
+    $landlord_result = $conn->query($landlord_query);
+    if ($landlord_result->num_rows === 0) {
+        echo "error: Landlord profile not found";
         exit();
     }
+    $landlord = $landlord_result->fetch_assoc();
+    $landlord_id = $landlord['id'];
     
     // Sanitize and validate input
     $title = mysqli_real_escape_string($conn, trim($_POST['title'] ?? ''));
@@ -48,6 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Handle image uploads
     $images = [];
     if (!empty($_FILES['property_images']['name'][0])) {
+        // Check maximum number of images
+        if (count($_FILES['property_images']['name']) > 4) {
+            echo "error: Maximum 4 images allowed";
+            exit();
+        }
+
 		// Resolve upload directory robustly relative to project root
 		$uploadDir = dirname(__DIR__) . "/uploads/";
         if (!is_dir($uploadDir)) {
