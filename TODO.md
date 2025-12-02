@@ -1,2 +1,0 @@
-- [ ] Modify .side-images CSS to set gap: 0;
-- [ ] Modify .side-image CSS to set height: calc(100% / 3); and remove min-height: 160px;

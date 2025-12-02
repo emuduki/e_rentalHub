@@ -439,7 +439,7 @@ function loadSection(section) {
     // Show a loading placeholder
     content.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
-    fetch('sections/' + section + '.php')
+    fetch('/e_rentalHub/dashboards/sections/' + section + '.php')
         .then(response => {
             if (!response.ok) throw new Error('Network response was not ok');
             return response.text();

@@ -3,6 +3,7 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 session_start();
 include("../config/db.php");
+include("../config/api_keys.php");
 
 $property_id = intval($_GET['id'] ?? 0);
 if ($property_id <= 0) {
@@ -182,6 +183,27 @@ if (empty($imageUrls)) {
             max-height: 90vh;
             object-fit: contain;
         }
+
+        .location-info-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+            color: #6b7280;
+        }
+
+        .footer-contact-item i {
+            font-size: 1.25rem;
+            margin-top: 0.25rem;
+            color: #2563eb;
+        }
         @media (max-width: 768px) {
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
@@ -286,15 +308,29 @@ if (empty($imageUrls)) {
         <!-- Location Section -->
         <div class="property-info">
             <h2 class="section-title">Location</h2>
-            <div class="location-info mb-3">
-                <i class="bi bi-geo-alt-fill text-primary" style="font-size: 1.5rem;"></i>
-                <span style="font-size: 1.1rem;"><?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></span>
-            </div>
-            <div id="map" style="width: 100%; height: 400px; border-radius: 10px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
-                <div class="text-center">
-                    <i class="bi bi-map" style="font-size: 3rem; margin-bottom: 1rem;"></i>
-                    <p>Map view coming soon</p>
-                    <small>Address: <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></small>
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-7">
+                    <div id="map" style="width: 100%; height: 400px; border-radius: 10px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                        <div class="text-center">
+                            <i class="bi bi-map" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+                            <p>Map view coming soon</p>
+                            <small>Address: <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="location-info-box">
+                        <h3 class="feature-title">Property Location</h3>
+                        <p class="feature-description">Find this property easily. Contact the landlord for viewing arrangements.</p>
+                        <div class="footer-contact-item">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span><?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></span>
+                        </div>
+                        <div class="footer-contact-item">
+                            <i class="bi bi-telephone-fill"></i>
+                            <span>+254 700 000 000</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -433,106 +469,64 @@ if (empty($imageUrls)) {
             }
         });
 
-        // Map initialization with Google Maps primary and Leaflet+Nominatim fallback
-        (function(){
-            const address = "<?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?>";
-            const mapDiv = document.getElementById('map');
+        function initMap() {
+            try {
+                const address = "<?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?>";
+                const geocoder = new google.maps.Geocoder();
 
-            function clearPlaceholder() {
-                mapDiv.innerHTML = '';
-                mapDiv.style.background = 'none';
-            }
-
-            function initLeafletFromCoords(lat, lon) {
-                clearPlaceholder();
-                const map = L.map('map', { scrollWheelZoom: false }).setView([lat, lon], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors'
-                }).addTo(map);
-                L.marker([lat, lon]).addTo(map).bindPopup('<?= addslashes(htmlspecialchars($property['title'])) ?>').openPopup();
-            }
-
-            async function geocodeWithNominatim(query) {
-                const url = 'https://nominatim.openstreetmap.org/search?format=json&q=' + encodeURIComponent(query);
-                try {
-                    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } });
-                    const data = await resp.json();
-                    if (Array.isArray(data) && data.length > 0) {
-                        const lat = parseFloat(data[0].lat);
-                        const lon = parseFloat(data[0].lon);
-                        return { lat, lon };
-                    }
-                } catch (e) {
-                    console.error('Nominatim geocode error', e);
-                }
-                return null;
-            }
-
-            // Fallback when Google Maps auth fails or script doesn't load
-            window.gm_authFailure = function() {
-                console.warn('Google Maps authentication failed — falling back to OpenStreetMap (Leaflet).');
-                geocodeWithNominatim(address).then(coords => {
-                    if (coords) initLeafletFromCoords(coords.lat, coords.lon);
-                    else {
-                        mapDiv.querySelector('p').textContent = 'Map could not be loaded for this address.';
-                        mapDiv.querySelector('small').textContent = 'Please check the address or try again later.';
+                geocoder.geocode({ 'address': address }, function(results, status) {
+                    if (status === 'OK' && results && results[0]) {
+                        const map = new google.maps.Map(document.getElementById("map"), {
+                            zoom: 15,
+                            center: results[0].geometry.location
+                        });
+                        const marker = new google.maps.Marker({
+                            position: results[0].geometry.location,
+                            map: map,
+                            title: "<?= addslashes(htmlspecialchars($property['title'])) ?>"
+                        });
+                    } else {
+                        // Fallback to Kisii if geocoding fails
+                        const kisii = { lat: -0.6818, lng: 34.7677 };
+                        const map = new google.maps.Map(document.getElementById("map"), {
+                            zoom: 14,
+                            center: kisii,
+                        });
+                        const marker = new google.maps.Marker({
+                            position: kisii,
+                            map: map,
+                            title: "Student Housing Office (Approximate Location)"
+                        });
                     }
                 });
-            };
+            } catch (error) {
+                console.error('Google Maps error:', error);
+                // Show fallback message
+                document.getElementById("map").innerHTML = `
+                    <div class="text-center">
+                        <i class="bi bi-map" style="font-size: 3rem; margin-bottom: 1rem; color: #6b7280;"></i>
+                        <p style="color: #6b7280;">Map temporarily unavailable</p>
+                        <small style="color: #9ca3af;">Address: <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></small>
+                        <br><small style="color: #ef4444;">Please check your Google Maps API key configuration</small>
+                    </div>
+                `;
+            }
+        }
 
-            // Timeout fallback in case Google Maps script never calls the callback
-            let googleMapInitialized = false;
-
-            window.initMap = function() {
-                googleMapInitialized = true;
-                try {
-                    const geocoder = new google.maps.Geocoder();
-                    geocoder.geocode({ 'address': address }, function(results, status) {
-                        if (status === 'OK' && results && results[0]) {
-                            clearPlaceholder();
-                            const map = new google.maps.Map(mapDiv, {
-                                zoom: 15,
-                                center: results[0].geometry.location
-                            });
-                            new google.maps.Marker({ map: map, position: results[0].geometry.location });
-                        } else {
-                            console.error('Google geocode status:', status);
-                            // Use Nominatim fallback
-                            geocodeWithNominatim(address).then(coords => {
-                                if (coords) initLeafletFromCoords(coords.lat, coords.lon);
-                                else {
-                                    mapDiv.querySelector('p').textContent = 'Map could not be loaded for this address.';
-                                    mapDiv.querySelector('small').textContent = 'Reason: ' + status;
-                                }
-                            });
-                        }
-                    });
-                } catch (e) {
-                    console.error('Error initializing Google Maps:', e);
-                    // fallback
-                    geocodeWithNominatim(address).then(coords => {
-                        if (coords) initLeafletFromCoords(coords.lat, coords.lon);
-                    });
-                }
-            };
-
-            // If Google doesn't initialize within 4 seconds, try OSM fallback
-            setTimeout(() => {
-                if (!googleMapInitialized) {
-                    console.warn('Google Maps did not initialize in time — using OpenStreetMap fallback.');
-                    geocodeWithNominatim(address).then(coords => {
-                        if (coords) initLeafletFromCoords(coords.lat, coords.lon);
-                    });
-                }
-            }, 4000);
-        })();
+        function gm_authFailure() {
+            console.error('Google Maps authentication failed');
+            document.getElementById("map").innerHTML = `
+                <div class="text-center">
+                    <i class="bi bi-exclamation-triangle" style="font-size: 3rem; margin-bottom: 1rem; color: #ef4444;"></i>
+                    <p style="color: #6b7280;">Google Maps API Key Error</p>
+                    <small style="color: #9ca3af;">Address: <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></small>
+                    <br><small style="color: #ef4444;">Please configure a valid Google Maps API key in config/api_keys.php</small>
+                </div>
+            `;
+        }
     </script>
 
-    <!-- Google Maps API Script -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDd5_XAqPcgJh0FHhyQJRG4-uvSe_abclE&callback=initMap" async defer></script>
-    <!-- Leaflet JS (for fallback) -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 </body>
 </html>

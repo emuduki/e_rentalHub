@@ -348,7 +348,7 @@ $revenue_growth = 0;
         <div class="quick-actions-wrapper">
             <h6 class="fw-bold mb-3">Quick Actions</h6>
             <div class="quick-actions">
-                <div class="action-card" onclick="window.location='../houses/add_house.php'">
+                <div class="action-card" onclick="new bootstrap.Modal(parent.document.getElementById('addPropertyModal')).show()">
                 <div class="action-icon text-blue">
                     <i class="bi bi-plus-lg"></i>
                 </div>
@@ -356,7 +356,7 @@ $revenue_growth = 0;
                 <small>List a new property</small>
             </div>
 
-            <div class="action-card" onclick="window.location='../houses/analytics.php'">
+            <div class="action-card" onclick="loadSection('analytics')">
                 <div class="action-icon text-purple">
                     <i class="bi bi-bar-chart-line"></i>
                 </div>
@@ -364,7 +364,7 @@ $revenue_growth = 0;
                 <small>Generate analytics</small>
             </div>
 
-            <div class="action-card" onclick="window.location='../houses/inquiries.php'">
+            <div class="action-card" onclick="loadSection('inquiries')">
                 <div class="action-icon text-green">
                     <i class="bi bi-chat-dots-fill"></i>
                 </div>
@@ -372,7 +372,7 @@ $revenue_growth = 0;
                 <small>Check inquiries</small>
             </div>
 
-            <div class="action-card" onclick="window.location='../houses/manage_reservations.php'">
+            <div class="action-card" onclick="loadSection('manage_reservations')">
                 <div class="action-icon text-orange">
                     <i class="bi bi-calendar-check"></i>
                 </div>
@@ -389,12 +389,13 @@ $revenue_growth = 0;
             <?php
             // Fetch the 3 most recent reservations for this landlord
             $recent_reservations_query = $conn->query("
-                  SELECT r.id, r.status, p.title AS property_title, COALESCE(u.name, u.username, u.email) AS tenant_name 
-                  FROM reservations r 
-                  JOIN properties p ON r.property_id = p.id 
-                  LEFT JOIN users u ON (u.user_id = r.student_id OR u.id = r.student_id) 
-                  WHERE p.landlord_id = $landlord_id 
-                  ORDER BY r.created_at DESC 
+                  SELECT r.id, r.status, p.title AS property_title, COALESCE(s.full_name, u.username, u.email) AS tenant_name
+                  FROM reservations r
+                  JOIN properties p ON r.property_id = p.id
+                  LEFT JOIN users u ON u.user_id = r.student_id
+                  LEFT JOIN students s ON s.user_id = r.student_id
+                  WHERE p.landlord_id = $landlord_id
+                  ORDER BY r.created_at DESC
                   LIMIT 3
             ");
             if ($recent_reservations_query && $recent_reservations_query->num_rows > 0):
@@ -420,7 +421,7 @@ $revenue_growth = 0;
              ?>
 
              <div class="text-center mt-3">
-                <a href="../houses/manage_reservations.php" class="view-all-link">
+                <a href="javascript:void(0);" onclick="parent.loadSection('manage_reservations')" class="view-all-link">
                     View All Reservations
                 </a>
              </div>
@@ -461,9 +462,9 @@ $revenue_growth = 0;
              ?>
 
              <div class="text-center mt-3">
-                <a href="../houses/analytics.php" class="view-all-link">
+                <button onclick="loadSection('analytics')" class="view-all-link">
                     View Analytics
-                </a>
+                </button>
              </div>
         </div>
 
