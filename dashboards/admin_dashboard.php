@@ -9,6 +9,20 @@ if ($role !== 'admin') {
     exit();
 }
 
+// Fetch admin details
+$admin_id = $_SESSION['user_id'] ?? null;
+$admin_username = $_SESSION['username'] ?? 'Admin';
+$admin_email = $_SESSION['email'] ?? '';
+
+if ($admin_id) {
+    $admin_result = $conn->query("SELECT username, email FROM users WHERE user_id = $admin_id LIMIT 1");
+    if ($admin_result && $admin_result->num_rows > 0) {
+        $admin_data = $admin_result->fetch_assoc();
+        $admin_username = $admin_data['username'];
+        $admin_email = $admin_data['email'];
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -19,6 +33,7 @@ if ($role !== 'admin') {
 <title>Admin Dashboard</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
 <style>
     body { min-height: 100vh; display: flex; flex-direction: column; }
 
@@ -162,13 +177,15 @@ if ($role !== 'admin') {
 
     <div class="bottom-section">
         <div class="d-flex align-items-center mb-2">
-            <i class="bi bi-person-circle fs-4 me-2"></i>
+            <div class="rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #e9ecef; font-weight: 700; color: #6c757d; font-size: 14px;">
+                <?= strtoupper(substr($admin_username ?: 'A', 0, 2)) ?>
+            </div>
             <div>
-                <strong>Admin</strong><br>
-                <small class="text-muted"><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></small>
+                <strong><?= htmlspecialchars($admin_username) ?></strong><br>
+                <small class="text-muted"><?= htmlspecialchars($admin_email ?: 'admin@example.com') ?></small>
             </div>
         </div>
-        <a href="../logout.php" class="btn btn-dark w-100 d-flex  align-items-center justify-content-center">
+        <a href="../auth/logout.php" class="btn btn-dark w-100 d-flex align-items-center justify-content-center">
             <i class="bi bi-box-arrow-right me-1"></i>Logout
         </a>
     </div>
