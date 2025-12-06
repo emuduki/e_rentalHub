@@ -54,6 +54,19 @@ if ($images_query) {
     }
 }
 
+// Fetch similar properties (same type, different property, limit 4)
+$similar_sql = "SELECT p.id, p.title, p.rent, p.city, p.address, p.type,
+                       (SELECT pi.image_path FROM property_images pi WHERE pi.property_id = p.id ORDER BY pi.id DESC LIMIT 1) AS image_path
+                FROM properties p
+                WHERE p.type = ? AND p.id != ? AND p.status = 'available'
+                ORDER BY p.created_at DESC
+                LIMIT 4";
+$similar_stmt = $conn->prepare($similar_sql);
+$similar_stmt->bind_param("si", $property['type'], $property_id);
+$similar_stmt->execute();
+$similar_properties = $similar_stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$similar_stmt->close();
+
 // Parse amenities
 $amenities_list = [];
 if (!empty($property['amenities'])) {
@@ -105,6 +118,7 @@ if (empty($imageUrls)) {
             display: grid;
             grid-template-columns: 2fr 1fr;
             gap: 12px;
+            margin-bottom: 2rem;
         }
 
         .main-image {
@@ -131,6 +145,24 @@ if (empty($imageUrls)) {
             box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
+        /* Make property section and sidebar sit side-by-side */
+        .property-layout {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* Left section width (70%) */
+        .property-main {
+            flex: 0 0 70%;
+        }
+
+        /* Right sidebar width (30%) */
+        .property-sidebar {
+            flex: 0 0 30%;
+        }
+
+        /* Property box styling */
         .property-info {
             background: white;
             padding: 2rem;
@@ -138,6 +170,7 @@ if (empty($imageUrls)) {
             margin-bottom: 2rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+
         .section-title {
             font-size: 1.5rem;
             font-weight: 700;
@@ -218,13 +251,12 @@ if (empty($imageUrls)) {
             .side-image {
                 height: 120px;
             }
-            
-        }
+
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Property Header -->
+        <!-- Property Header (Full Width) -->
         <div class="property-header">
             <h1 class="mb-3"><?= htmlspecialchars($property['title']) ?></h1>
             <div class="location-info">
@@ -236,7 +268,7 @@ if (empty($imageUrls)) {
             </div>
         </div>
 
-        <!-- Image Gallery -->
+        <!-- Image Gallery (Full Width) -->
         <?php if (!empty($imageUrls)): ?>
         <div class="image-gallery">
             <img src="<?= htmlspecialchars($imageUrls[0]) ?>" alt="Main property image" class="main-image" onclick="openImageModal(0)">
@@ -253,89 +285,139 @@ if (empty($imageUrls)) {
         </div>
         <?php endif; ?>
 
-        <!-- Property Information -->
-        <div class="property-info">
-            <h2 class="section-title">About Property</h2>
-            <p class="text-muted" style="line-height: 1.8;">
-                <?= !empty($property['description']) ? nl2br(htmlspecialchars($property['description'])) : 'No description available for this property.' ?>
-            </p>
-        </div>
+       <!-- MAIN WRAPPER: Property Info + Sidebar -->
+        <div class="property-layout">
 
-        <!-- Advance Features -->
-        <div class="property-info">
-            <h2 class="section-title">Advance Features</h2>
-            <div class="features-grid">
-                <div class="feature-item">
-                    <i class="bi bi-door-open feature-icon"></i>
-                    <span><?= (int)$property['bedrooms'] ?> Bedrooms</span>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-droplet feature-icon"></i>
-                    <span><?= max(1, floor((int)$property['bedrooms'] / 2)) ?> Bathrooms</span>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-rulers feature-icon"></i>
-                    <span><?= (int)$property['area'] ?> sqft</span>
-                </div>
-                <div class="feature-item">
-                    <i class="bi bi-house feature-icon"></i>
-                    <span><?= htmlspecialchars($property['type']) ?></span>
-                </div>
-                <?php 
-                $amenity_icons = [
-                    'WiFi' => 'wifi',
-                    'Parking' => 'car-front',
-                    'Water 24/7' => 'droplet',
-                    'Security' => 'shield-check',
-                    'Backup Generator' => 'lightning',
-                    'Laundry' => 'bucket',
-                    'TV Cable' => 'tv',
-                    'Free Medical' => 'hospital',
-                    'Fireplace' => 'fire',
-                    'Free Spa' => 'flower1'
-                ];
-                foreach ($amenities_list as $amenity): 
-                    $icon = $amenity_icons[$amenity] ?? 'check-circle';
-                ?>
-                <div class="feature-item">
-                    <i class="bi bi-<?= $icon ?> feature-icon"></i>
-                    <span><?= htmlspecialchars($amenity) ?></span>
-                </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
+            <!-- LEFT SIDE (Property details: 70%) -->
+            <div class="property-main">
 
-        <!-- Location Section -->
-        <div class="property-info">
-            <h2 class="section-title">Location</h2>
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-7">
-                    <div id="map" style="width: 100%; height: 400px; border-radius: 10px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+                <!-- About Property -->
+                <div class="property-info">
+                    <h2 class="section-title">About Property</h2>
+                    <p class="text-muted" style="line-height: 1.8;">
+                        <?= !empty($property['description']) ? nl2br(htmlspecialchars($property['description'])) : 'No description available for this property.' ?>
+                    </p>
+                </div>
+
+                <!-- Advanced Features -->
+                <div class="property-info">
+                    <h2 class="section-title">Advance Features</h2>
+                    <div class="features-grid">
+                        <div class="feature-item"><i class="bi bi-door-open feature-icon"></i>
+                            <span><?= (int)$property['bedrooms'] ?> Bedrooms</span>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="bi bi-droplet feature-icon"></i>
+                            <span><?= max(1, floor((int)$property['bedrooms'] / 2)) ?> Bathrooms</span>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="bi bi-rulers feature-icon"></i>
+                            <span><?= (int)$property['area'] ?> sqft</span>
+                        </div>
+
+                        <div class="feature-item">
+                            <i class="bi bi-house feature-icon"></i>
+                            <span><?= htmlspecialchars($property['type']) ?></span>
+                        </div>
+
+                        <?php
+                        $amenity_icons = [
+                            'WiFi' => 'wifi',
+                            'Parking' => 'car-front',
+                            'Water 24/7' => 'droplet',
+                            'Security' => 'shield-check',
+                            'Backup Generator' => 'lightning',
+                            'Laundry' => 'bucket',
+                            'TV Cable' => 'tv',
+                            'Free Medical' => 'hospital',
+                            'Fireplace' => 'fire',
+                            'Free Spa' => 'flower1'
+                        ];
+                        foreach ($amenities_list as $amenity):
+                            $icon = $amenity_icons[$amenity] ?? 'check-circle';
+                        ?>
+                        <div class="feature-item">
+                            <i class="bi bi-<?= $icon ?> feature-icon"></i>
+                            <span><?= htmlspecialchars($amenity) ?></span>
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Location Section -->
+                <div class="property-info">
+                    <h2 class="section-title">Location</h2>
+
+                    <div id="map"
+                        style="width: 100%; height: 400px; border-radius: 10px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
                         <div class="text-center">
                             <i class="bi bi-map" style="font-size: 3rem; margin-bottom: 1rem;"></i>
                             <p>Map view coming soon</p>
-                            <small>Address: <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></small>
+                            <small>
+                                Address:
+                                <?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?>
+                            </small>
                         </div>
                     </div>
                 </div>
-                <div class="col-lg-5">
-                    <div class="location-info-box">
-                        <h3 class="feature-title">Property Location</h3>
-                        <p class="feature-description">Find this property easily. Contact the landlord for viewing arrangements.</p>
-                        <div class="footer-contact-item">
-                            <i class="bi bi-geo-alt-fill"></i>
-                            <span><?= htmlspecialchars($property['address'] . ', ' . $property['city']) ?></span>
+
+            </div> <!-- END LEFT SIDE -->
+
+
+            <!-- RIGHT SIDE SIDEBAR (30%) -->
+            <div class="property-sidebar">
+                <div class="property-info sticky-top" style="top: 20px;">
+                    <h3 class="section-title mb-3">Similar Properties</h3>
+
+                    <?php if (!empty($similar_properties)): ?>
+                        <?php foreach ($similar_properties as $similar): ?>
+                            <div class="similar-property-card mb-3 p-3 border rounded"
+                                style="background: white; cursor: pointer;"
+                                onclick="window.location.href='view.php?id=<?= $similar['id'] ?>'">
+
+                                <div class="d-flex align-items-start gap-3">
+                                    <img src="<?= htmlspecialchars($similar['image_path'] ? $uploadsBaseUrl . $similar['image_path'] : $uploadsBaseUrl . 'placeholder-property.jpg') ?>"
+                                        alt="<?= htmlspecialchars($similar['title']) ?>"
+                                        class="rounded"
+                                        style="width: 80px; height: 60px; object-fit: cover;">
+
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold" style="font-size: 0.9rem;">
+                                            <?= htmlspecialchars($similar['title']) ?>
+                                        </h6>
+
+                                        <div class="text-muted small mb-1">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            <?= htmlspecialchars($similar['address'] . ', ' . $similar['city']) ?>
+                                        </div>
+
+                                        <div class="fw-semibold text-primary">
+                                            KES <?= number_format($similar['rent']) ?>/month
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-house-door" style="font-size: 2rem;"></i>
+                            <p class="mt-2">No similar properties found</p>
                         </div>
-                        <div class="footer-contact-item">
-                            <i class="bi bi-telephone-fill"></i>
-                            <span>+254 700 000 000</span>
-                        </div>
-                    </div>
+
+                    <?php endif; ?>
+
                 </div>
             </div>
+
         </div>
 
-        <!-- Action Buttons -->
+
+        <!-- Action Buttons (Full Width) -->
         <div class="property-info text-center">
             <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'student'): ?>
                 <button class="btn btn-success btn-lg me-2" data-bs-toggle="modal" data-bs-target="#bookingModal">

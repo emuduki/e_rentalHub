@@ -180,6 +180,106 @@ if (!empty($student_profile['avatar'])) {
         .bottom-section .btn i {
             font-size: 1rem;
         }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-width: 200px;
+            }
+            .sidebar.collapsed {
+                transform: translateX(-200px);
+            }
+            .main-content {
+                margin-left: 200px;
+                padding-top: 72px;
+                transition: margin-left 0.28s ease;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+            .sidebar .brand {
+                font-size: 0.95rem;
+            }
+            .sidebar ul li a {
+                padding: 6px 8px;
+                font-size: 0.9rem;
+            }
+            .sidebar .badge {
+                font-size: 0.65rem;
+                padding: 2px 5px;
+            }
+            .bottom-section {
+                padding: 8px 12px;
+                margin-bottom: 12px;
+            }
+            .bottom-section .d-flex {
+                font-size: 0.9rem;
+            }
+            .bottom-section .btn {
+                padding: 5px 0;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .sidebar {
+                min-width: 160px;
+            }
+            .sidebar.collapsed {
+                transform: translateX(-160px);
+            }
+            .main-content {
+                margin-left: 0;
+                padding: 16px;
+                transition: none;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+            .sidebar .brand {
+                font-size: 0.8rem;
+                margin-bottom: 8px;
+            }
+            .sidebar ul {
+                gap: 6px;
+                padding-top: 12px;
+            }
+            .sidebar ul li {
+                margin: 0 4px;
+            }
+            .sidebar ul li a {
+                padding: 5px 6px;
+                font-size: 0.75rem;
+            }
+            .sidebar ul li a i {
+                font-size: 0.9rem;
+            }
+            .sidebar .badge {
+                font-size: 0.55rem;
+                padding: 1px 4px;
+                right: 6px;
+            }
+            .bottom-section {
+                padding: 6px 10px;
+                margin-bottom: 10px;
+            }
+            .bottom-section .d-flex {
+                font-size: 0.8rem;
+                margin-bottom: 6px;
+            }
+            .bottom-section .d-flex img,
+            .bottom-section .d-flex > div {
+                display: none;
+            }
+            .bottom-section a,
+            .bottom-section .btn {
+                padding: 4px 0;
+                font-size: 0.75rem;
+            }
+            .bottom-section .btn i {
+                font-size: 0.9rem;
+            }
+        }
     
     </style>
 </head>
@@ -221,7 +321,7 @@ if (!empty($student_profile['avatar'])) {
             <li><a href="javascript:void(0);"  onclick="loadSection('saved_properties', this)"><i class="fa-regular fa-heart me-2"></i>Saved</a></li>
             <li><a href="javascript:void(0);" onclick="loadSection('my_bookings', this)"><i class="fa-regular fa-calendar me-2"></i>My Bookings</a></li>
 
-            <li><a href="javascript:void(0);" onclick="loadSection('payments', this)"><i class="fa-solid fa-money-bill me-2"></i>Payments</a></li>
+            <li><a href="javascript:void(0);" onclick="loadSection('payments', this)"><i class="bi bi-currency-dollar me-2"></i>Payments</a></li>
             <li><a href="javascript:void(0);" onclick="loadSection('messages', this)"><i class="fa-regular fa-message me-2"></i>Messages</a></li>
             <li><a href="javascript:void(0);" onclick="loadSection('student_profile', this)"><i class="bi bi-person me-2"></i>Profile</a></li>
 
@@ -317,6 +417,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 content.innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
             });
     };
+
+
 
     // Default section load: mark the link active when loading
     const searchLink = document.querySelector('.sidebar a[onclick*="search_properties"]');

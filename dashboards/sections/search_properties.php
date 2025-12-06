@@ -198,6 +198,134 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
              border-radius: 50%;
              box-shadow: 0 2px 6px rgba(0,0,0,0.08);
          }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .page-pad {
+                padding: 1.5rem;
+            }
+            .search-hero {
+                padding: 1.5rem 0.8rem;
+                margin-bottom: 1rem;
+            }
+            .search-hero h2 {
+                font-size: 1.4rem;
+            }
+            .search-hero p {
+                font-size: 0.85rem;
+            }
+            .search-form {
+                padding: 0 !important;
+            }
+            .search-form .row {
+                gap: 0.5rem;
+            }
+            .search-form .col-md-6,
+            .search-form .col-md-3 {
+                flex: 0 0 auto;
+            }
+            .search-form .col-md-6 {
+                min-width: 45%;
+            }
+            .search-form .col-md-3 {
+                min-width: 25%;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .page-pad {
+                padding: 1rem;
+            }
+            .search-hero {
+                padding: 1.2rem 0.6rem;
+                margin-bottom: 0.8rem;
+                border-radius: 10px;
+            }
+            .search-hero h2 {
+                font-size: 1.1rem;
+                margin-bottom: 0.3rem;
+            }
+            .search-hero p {
+                font-size: 0.75rem;
+                margin-bottom: 1rem;
+            }
+            .search-form {
+                padding: 0 !important;
+            }
+            .search-form .row {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 0.3rem;
+                align-items: center;
+            }
+            .search-form .col-md-6 {
+                flex: 1;
+                min-width: 100px;
+            }
+            .search-form .col-md-3 {
+                flex: 0.8;
+                min-width: 70px;
+            }
+            .search-form .col-md-3.d-grid {
+                flex: 0 0 auto;
+                min-width: 45px;
+            }
+            .search-form .input-group input,
+            .search-form input[type="text"] {
+                padding: 0.4rem 0.4rem 0.4rem 1.8rem;
+                font-size: 0.85rem;
+            }
+            .search-form .input-group-text {
+                padding: 0.4rem 0.3rem;
+            }
+            .search-form .input-group-text i {
+                font-size: 0.9rem;
+            }
+            .search-form .btn {
+                padding: 0.4rem 0.5rem;
+                font-size: 0.75rem;
+            }
+            .search-form .btn i {
+                font-size: 0.85rem;
+                margin-right: 0.2rem;
+            }
+            #propertiesContainer .col-md-6.col-lg-4 {
+                flex: 0 0 calc(50% - 0.5rem);
+                max-width: calc(50% - 0.5rem);
+            }
+            .property-card img {
+                height: 180px;
+            }
+            .property-card .card-body {
+                padding: 0.9rem;
+            }
+            .property-card .card-body h6 {
+                font-size: 0.85rem;
+            }
+            .property-card .card-body p {
+                font-size: 0.8rem;
+                margin-bottom: 0.5rem;
+            }
+            .property-card .card-body .meta {
+                font-size: 0.7rem;
+                margin-bottom: 0.5rem;
+            }
+            .property-card .card-body .btn-dark {
+                padding: 0.3rem 0.6rem;
+                font-size: 0.7rem;
+            }
+            .prop-badge {
+                padding: 0.25rem 0.4rem;
+                font-size: 0.65rem;
+            }
+            .fav-btn {
+                width: 30px;
+                height: 30px;
+            }
+            .fav-btn i {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>

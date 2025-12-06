@@ -85,6 +85,78 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 		.property-card img { object-fit: cover; height: 220px; width: 100%; }
 		.prop-badge{ position:absolute; top:12px; left:12px; z-index:2; padding:.35rem .6rem; border-radius:12px; background:rgba(255,255,255,.95); color:#111; border:1px solid rgba(0,0,0,.06); backdrop-filter: blur(2px); }
 		.fav-btn{ position:absolute; top:12px; right:12px; z-index:2; width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:rgba(255,255,255,.95); border:1px solid rgba(0,0,0,.06); border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,.08); }
+
+		/* Mobile responsiveness */
+		@media (max-width: 768px) {
+			.container {
+				padding: 1.5rem 0.8rem;
+			}
+			.bg-white {
+				padding: 1.2rem !important;
+				border-radius: 10px;
+			}
+			.bg-white h4 {
+				font-size: 1.2rem;
+			}
+			.bg-white p {
+				font-size: 0.85rem;
+			}
+		}
+
+		@media (max-width: 576px) {
+			.container {
+				padding: 1rem 0.5rem;
+			}
+			.bg-white {
+				padding: 1rem !important;
+				border-radius: 8px;
+			}
+			.bg-white h4 {
+				font-size: 1rem;
+			}
+			.bg-white p {
+				font-size: 0.75rem;
+			}
+			.bg-white .text-muted {
+				font-size: 0.7rem;
+			}
+			.row .col-md-6.col-lg-4 {
+				flex: 0 0 calc(50% - 0.5rem);
+				max-width: calc(50% - 0.5rem);
+			}
+			.property-card img {
+				height: 180px;
+			}
+			.property-card .card-body {
+				padding: 0.9rem;
+			}
+			.property-card .card-body h6 {
+				font-size: 0.85rem;
+			}
+			.property-card .card-body p {
+				font-size: 0.8rem;
+				margin-bottom: 0.5rem;
+			}
+			.property-card .card-body .meta {
+				font-size: 0.7rem;
+				margin-bottom: 0.5rem;
+			}
+			.property-card .card-body .btn-dark {
+				padding: 0.3rem 0.6rem;
+				font-size: 0.7rem;
+			}
+			.prop-badge {
+				padding: 0.25rem 0.4rem;
+				font-size: 0.65rem;
+			}
+			.fav-btn {
+				width: 30px;
+				height: 30px;
+			}
+			.fav-btn i {
+				font-size: 0.9rem;
+			}
+		}
 	</style>
 	</head>
 <body>

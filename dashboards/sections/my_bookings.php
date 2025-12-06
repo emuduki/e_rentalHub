@@ -95,8 +95,8 @@ $stmt->close();
     <p class="text-muted">View and manage your property bookings</p>
 
     <div class="mb-3">
-        <a href="?tab=active" data-tab="active" class="tab-btn btn btn-sm <?= $tab==='active' ? 'btn-outline-primary' : 'btn-light' ?>">Active Bookings</a>
-        <a href="?tab=past" data-tab="past" class="tab-btn btn btn-sm <?= $tab==='past' ? 'btn-outline-primary' : 'btn-light' ?>">Past Bookings</a>
+        <a href="#" data-tab="active" class="tab-btn btn btn-sm <?= $tab==='active' ? 'btn-outline-primary' : 'btn-light' ?>">Active Bookings</a>
+        <a href="#" data-tab="past" class="tab-btn btn btn-sm <?= $tab==='past' ? 'btn-outline-primary' : 'btn-light' ?>">Past Bookings</a>
     </div>
 </div>
 
@@ -170,7 +170,9 @@ $stmt->close();
                     <div class="col-md-6 booking-actions text-md-end mt-2">
                         <a href="/e_rentalHub/houses/view.php?id=<?= intval($b['property_id']) ?>" class="btn btn-outline-secondary btn-sm">Contact Landlord</a>
                         <a href="#" class="btn btn-outline-secondary btn-sm">Download Contract</a>
-                        <a href="#" class="btn btn-link text-danger btn-sm">Request Cancellation</a>
+                        <?php if (in_array(strtolower($b['status']), ['pending', 'confirmed'])): ?>
+                            <a href="#" class="btn btn-link text-danger btn-sm cancel-btn" data-reservation-id="<?= intval($b['reservation_id']) ?>">Request Cancellation</a>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -191,7 +193,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         this.classList.remove('btn-light');
         this.classList.add('btn-outline-primary');
 
-        const other = document.querySelector('.tab-btn[data-tab!="' + tab + '"]');
+        const otherTab = tab === 'active' ? 'past' : 'active';
+        const other = document.querySelector('.tab-btn[data-tab="' + otherTab + '"]');
         if (other) {
             other.classList.remove('btn-outline-primary');
             other.classList.add('btn-light');
@@ -221,6 +224,62 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
                 console.error('Failed to load bookings tab:', err);
                 alert('Failed to load bookings. Please try again.');
             });
+    });
+});
+
+// Handle cancellation requests
+document.addEventListener('click', function(e) {
+    const cancelBtn = e.target.closest('.cancel-btn');
+    if (!cancelBtn) return;
+
+    e.preventDefault();
+    const reservationId = cancelBtn.getAttribute('data-reservation-id');
+    console.log('Cancel button clicked, reservation ID:', reservationId);
+    if (!reservationId) {
+        console.error('No reservation ID found');
+        return;
+    }
+
+    if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+    // Disable button to prevent double-click
+    cancelBtn.disabled = true;
+    cancelBtn.textContent = 'Cancelling...';
+
+    console.log('Making fetch request to cancel booking');
+    fetch('/e_rentalHub/api/cancel_booking.php', {
+        method: 'POST',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'reservation_id=' + encodeURIComponent(reservationId)
+    })
+    .then(response => {
+        console.log('Response received:', response);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            alert('Booking cancelled successfully.');
+            // Reload the current tab to reflect changes
+            const currentTab = document.querySelector('.tab-btn.btn-outline-primary').dataset.tab;
+            const tabBtn = document.querySelector('.tab-btn[data-tab="' + currentTab + '"]');
+            if (tabBtn) {
+                tabBtn.click();
+            }
+        } else {
+            alert('Failed to cancel booking: ' + (data.message || 'Unknown error'));
+            // Re-enable button
+            cancelBtn.disabled = false;
+            cancelBtn.textContent = 'Request Cancellation';
+        }
+    })
+    .catch(error => {
+        console.error('Error cancelling booking:', error);
+        alert('Network error. Please try again.');
+        // Re-enable button
+        cancelBtn.disabled = false;
+        cancelBtn.textContent = 'Request Cancellation';
     });
 });
 </script>
