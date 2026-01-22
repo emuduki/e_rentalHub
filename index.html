@@ -37,6 +37,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            padding-top: 0;
         }
 
         /* Header Styles */
@@ -44,12 +45,19 @@
             background-color: #ffffff;
             padding: 1rem 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            height: 72px; /* adjust if needed */
+            padding: 0;
+            width: 100%;
+            z-index: 1030;
         }
 
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--dark-gray) !important;
+            white-space: nowrap;
         }
 
         .nav-link {
@@ -59,21 +67,28 @@
             white-space: nowrap;
             font-size: 1rem;
             padding: 0.5rem 0.5rem !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--primary-blue) !important;
         }
 
         .navbar-nav {
             gap: 0.25rem;
+            display: flex;
+            align-items: center;
         }
 
         .navbar-nav .nav-item {
-            margin-bottom: 0.25rem;
+            margin-bottom: 0;
         }
 
         .navbar-nav .btn-signin {
-            margin-left: 0.25rem;
+            margin-left: 0.5rem;
         }
 
-            .btn-signin {
+        .btn-signin {
             background-color: var(--dark-gray);
             color: white;
             border: none;
@@ -81,6 +96,22 @@
             border-radius: 0.5rem;
             font-weight: 500;
             cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-signin:hover {
+            background-color: var(--primary-blue);
+        }
+
+        /* Hamburger Menu */
+        .navbar-toggler {
+            border: none;
+            display: none;
+        }
+
+        .navbar-toggler:focus {
+            outline: none;
+            box-shadow: none;
         }
 
         /* Modal Styles */
@@ -105,23 +136,28 @@
         /* Hero Section */
        .hero-section {
                 position: relative;
-                height: calc(110vh - 70px);
+                min-height: 100vh;
                 width: 100%;
                 color: #fff;
                 display: flex;
                 align-items: center;
+                justify-content: center;
                 text-align: center;
                 margin: 0;
-                padding: 0;
+                padding: 2rem 1rem;
                 overflow: hidden;
+                margin-top: 72px;
                 background:linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
                 url('uploads/pexels-vince-2227832.jpg') center/cover no-repeat;
+                background-attachment: fixed;
             
             }
 
         .hero-content {
             position: relative;
             z-index: 1;
+            width: 100%;
+            max-width: 600px;
         }
 
         .hero-title {
@@ -146,7 +182,7 @@
             display: flex;
             align-items: center;
             gap: 1rem;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
         }
 
         .search-input-group {
@@ -797,72 +833,49 @@
             .footer-policies {
                 justify-content: center;
             }
-        }
-
-        /* Help Button */
-        .help-button {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            width: 50px;
-            height: 50px;
-            background-color: var(--dark-gray);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            z-index: 1000;
-            cursor: pointer;
-        }
-
-        .help-button:hover {
-            background-color: #111827;
-            color: white;
-        }
-
-        @media (max-width: 768px) {
-            .hero-title {
-                font-size: 1.75rem;
-            }
-
-            .hero-subtitle {
-                font-size: 1rem;
-            }
-
-            .search-bar {
-                flex-direction: column;
-                gap: 0.75rem;
-            }
-
-            .search-input-group,
-            .location-select,
-            .btn-search {
-                width: 100%;
-            }
-
-            .stat-number {
-                font-size: 2rem;
-            }
-
-            .section-title {
-                font-size: 2rem;
-            }
 
             .navbar {
                 padding: 0.75rem 0;
+                height: 72px;
+                padding: 0;
             }
 
             .navbar-brand {
                 font-size: 1.25rem;
             }
 
-            .nav-link {
+            .navbar-toggler {
+                display: none !important;
+            }
+
+            .navbar-nav {
+                display: flex !important;
+                align-items: center;
+                flex-direction: row !important;
+                gap: 0.1rem;
+            }
+
+            /* Hide all nav items except sign-in */
+            .navbar-nav .nav-item:not(.nav-signin) {
+                display: none !important;
+            }
+
+            /* Show sign-in item */
+            .navbar-nav .nav-item.nav-signin {
+                display: block !important;
+            }
+
+            /* Show nav-link only in sign-in item */
+            .navbar-nav .nav-item.nav-signin .nav-link {
+                display: inline-block !important;
                 font-size: 0.95rem;
                 margin: 0 0.25rem;
                 padding: 0.4rem 0.3rem !important;
+            }
+
+            /* Hide nav-link in other items */
+            .navbar-nav .nav-item:not(.nav-signin) .nav-link {
+                display: none !important;
             }
 
             .btn-signin {
@@ -891,85 +904,9 @@
             #map {
                 height: 300px;
             }
-
-            .footer-bottom-content {
-                flex-direction: column;
-                text-align: center;
-            }
-
-            .footer-policies {
-                justify-content: center;
-            }
         }
         
         @media (max-width: 576px) {
-            .hero-section {
-                height: auto;
-                padding: 5rem 1rem 3rem 1rem;
-                background-attachment: scroll;
-                margin-top: 70px;
-            }
-
-            .hero-content {
-                width: 100%;
-                padding: 0;
-            }
-
-            .hero-title {
-                font-size: 1.25rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .hero-subtitle {
-                font-size: 0.8rem;
-                margin-bottom: 1rem;
-            }
-
-            .search-bar {
-                padding: 0.5rem;
-                gap: 0.3rem;
-                flex-direction: row;
-                flex-wrap: wrap;
-                display: flex;
-                align-items: center;
-            }
-
-            .search-bar .d-flex {
-                width: auto;
-                flex: 1;
-                min-width: 100px;
-            }
-
-            .search-input-group {
-                flex: 1;
-                min-width: 120px;
-            }
-
-            .location-select {
-                flex: 0.8;
-                min-width: 90px;
-                padding: 0.4rem;
-                font-size: 0.85rem;
-            }
-
-            .btn-search {
-                flex: 0 0 auto;
-                padding: 0.4rem 0.6rem;
-                font-size: 0.9rem;
-                min-width: 50px;
-            }
-
-            .search-input {
-                font-size: 16px;
-                padding: 0.4rem 0.4rem 0.4rem 2rem;
-                width: 100%;
-            }
-
-            .search-input-group i {
-                left: 0.5rem;
-                font-size: 0.9rem;
-            }
-
             .section-title {
                 font-size: 1.4rem;
                 margin-bottom: 0.5rem;
@@ -1174,7 +1111,7 @@
             }
         }
         
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             .hero-section {
                 padding: 4.5rem 0.75rem 2rem 0.75rem;
                 margin-top: 70px;
@@ -1189,18 +1126,14 @@
             }
 
             .search-bar {
-                padding: 0.5rem;
-                gap: 0.2rem;
-                flex-direction: row;
-                flex-wrap: wrap;
-                display: flex;
-                align-items: center;
+                flex-wrap: nowrap;
+                gap: 0.3rem;
+                padding: 0.75rem;
             }
 
             .search-bar .d-flex {
-                width: auto;
-                flex: 1;
-                min-width: 80px;
+                flex: 0.7;
+                min-width: 70px;
             }
 
             .search-input-group {
@@ -1221,14 +1154,21 @@
 
             .location-select {
                 flex: 0.7;
-                min-width: 80px;
+                min-width: 70px;
                 padding: 0.35rem;
-                font-size: 0.8rem;
+                font-size: 0.75rem;
             }
 
             .btn-search {
                 flex: 0 0 auto;
-                padding: 0.35rem 0.5rem;
+                padding: 0.35rem 0.4rem;
+                font-size: 0.8rem;
+                min-width: 40px;
+            }
+
+            #filterBtn {
+                flex: 0 0 auto;
+                padding: 0.35rem 0.4rem;
                 font-size: 0.85rem;
                 min-width: 45px;
             }
@@ -1280,64 +1220,56 @@
 
             .navbar {
                 padding: 0.5rem 0;
+                flex-wrap: nowrap !important;
             }
 
             .navbar-brand {
-                font-size: 1rem;
+                font-size: 1.25rem;
+                flex: 0 0 auto;
             }
 
-            .nav-link {
-                font-size: 0.7rem;
-                margin: 0 0.05rem;
-                padding: 0.2rem 0.1rem !important;
-                font-weight: 400;
-            }
-
-            .btn-signin {
-                padding: 0.25rem 0.5rem;
-                font-size: 0.65rem;
-                white-space: nowrap;
-            }
-
-            .btn-signin .me-1 {
-                margin-right: 0.15rem !important;
+            .navbar-toggler {
+                display: none !important;
             }
 
             .navbar-nav {
-                gap: 0;
+                display: flex !important;
+                align-items: center;
             }
 
-            .nav-item {
-                margin-bottom: 0 !important;
-            }
-        
-            .navbar {
-                padding: 0.5rem 0;
+            /* Hide all nav items except sign-in */
+            .navbar-nav .nav-item:not(.nav-signin) {
+                display: none !important;
+                visibility: hidden !important;
             }
 
-            .navbar-brand {
-                font-size: 1rem;
+            .navbar-nav .nav-item.nav-signin {
+                display: block !important;
+                visibility: visible !important;
             }
 
+            /* Hide all nav links */
             .nav-link {
-                margin: 0.2rem 0;
-                padding: 0.2rem 0;
-                font-size: 0.9rem;
+                display: none !important;
             }
 
-            .btn-signin {
-                padding: 0.4rem 1rem;
-                font-size: 0.9rem;
+            .filter-sidebar {
+                width: 100%;
+                right: -100%;
             }
         }
     </style>
 </head>
 <body>
     <!-- Header -->
-    <nav class="navbar fixed-top flex-wrap">
-        <div class="container">
-            <a class="navbar-brand" href="#">Student Housing</a>
-            <ul class="navbar-nav ms-auto align-items-center flex-row flex-wrap">
+    <nav class="navbar">
+        <div class="container-fluid px-3 px-md-4">
+            <a class="navbar-brand" href="#">🏠 Student Housing</a>
+            <!-- Cache buster: v2.1 -->
+            <button class="navbar-toggler" id="navToggle" type="button">
+                <i class="bi bi-list"></i>
+            </button>
+            <ul class="navbar-nav ms-auto align-items-center" id="navMenu">
                 <li class="nav-item">
                     <a class="nav-link" href="#features">Features</a>
                 </li>
@@ -1350,7 +1282,7 @@
                 <li class="nav-item">
                     <a class="nav-link" href="#testimonials">Testimonials</a>
                 </li>
-                <li class="nav-item">
+                <li class="nav-item nav-signin">
                     <button class="btn btn-signin" data-bs-toggle="modal" data-bs-target="#loginModal">
                         <i class="bi bi-arrow-right me-1"></i> Sign In
                     </button>
@@ -2063,11 +1995,44 @@
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDd5_XAqPcgJh0FHhyQJRG4-uvSe_abclE&callback=initMap"
             async defer></script>
     <script>
+        // Mobile Navbar Toggle
+        (function() {
+            const navToggle = document.getElementById('navToggle');
+            const navMenu = document.getElementById('navMenu');
+            const navLinks = navMenu.querySelectorAll('.nav-link');
+
+            if (navToggle) {
+                navToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('show');
+                });
+
+                // Close menu when clicking on a link
+                navLinks.forEach(link => {
+                    link.addEventListener('click', function() {
+                        navMenu.classList.remove('show');
+                    });
+                });
+
+                // Close menu when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.navbar')) {
+                        navMenu.classList.remove('show');
+                    }
+                });
+            }
+        })();
+    </script>
+    <script>
         // Trigger login modal on search button click
         document.getElementById('searchBtn').addEventListener('click', function() {
             const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
             loginModal.show();
         });
+    </script>
+    <script>
+        // Mobile navbar display management - removed inline styles to let CSS rules work
+        // The CSS media queries handle hiding/showing nav items via .navbar-nav > li:not(.nav-signin)
+        // This script is kept empty to avoid inline style conflicts
     </script>
 </body>
 </html>
