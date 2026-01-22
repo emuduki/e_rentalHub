@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>e_rentalHub API - Documentation Center</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .doc-card {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .doc-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+        
+        .doc-card h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+        
+        .doc-card p {
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .doc-card a {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            transition: background 0.3s;
+            font-weight: 500;
+        }
+        
+        .doc-card a:hover {
+            background: #764ba2;
+        }
+        
+        .endpoints-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .endpoints-section h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .endpoint-group {
+            margin-bottom: 30px;
+        }
+        
+        .endpoint-group h3 {
+            color: #764ba2;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .endpoint {
+            background: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #667eea;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95em;
+        }
+        
+        .endpoint.get { border-left-color: #4CAF50; }
+        .endpoint.post { border-left-color: #2196F3; }
+        .endpoint.delete { border-left-color: #f44336; }
+        
+        .method {
+            font-weight: bold;
+            margin-right: 10px;
+            display: inline-block;
+            min-width: 60px;
+        }
+        
+        .method.GET { color: #4CAF50; }
+        .method.POST { color: #2196F3; }
+        .method.DELETE { color: #f44336; }
+        
+        .features-section {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .features-section h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+        
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-item {
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .feature-item h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .feature-item p {
+            color: #666;
+            font-size: 0.95em;
+        }
+        
+        footer {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            color: #666;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            background: #4CAF50;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            .docs-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 20px;
+            }
+            
+            .doc-card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>e_rentalHub API Documentation Center</h1>
+            <p class="subtitle">RESTful API for mobile and web applications</p>
+            <span class="status-badge">✓ PRODUCTION READY</span>
+        </header>
+        
+        <div class="docs-grid">
+            <div class="doc-card">
+                <h2>📖 Quick Start</h2>
+                <p>Get up and running with the API in just 5 minutes. Learn the basics of authentication, querying properties, and creating bookings.</p>
+                <a href="QUICKSTART.md">View Quick Start Guide</a>
+            </div>
+            
+            <div class="doc-card">
+                <h2>📚 Full Documentation</h2>
+                <p>Complete API reference with detailed endpoint descriptions, request/response examples, and error codes.</p>
+                <a href="README.md">View Full Documentation</a>
+            </div>
+            
+            <div class="doc-card">
+                <h2>🏗️ Architecture</h2>
+                <p>Understand the system architecture, data flow, security layers, and project structure.</p>
+                <a href="ARCHITECTURE.md">View Architecture</a>
+            </div>
+            
+            <div class="doc-card">
+                <h2>🧪 Testing Guide</h2>
+                <p>CURL examples, Postman setup, JavaScript samples, and a comprehensive testing checklist.</p>
+                <a href="TESTING_GUIDE.php">View Testing Guide</a>
+            </div>
+            
+            <div class="doc-card">
+                <h2>💡 Implementation Details</h2>
+                <p>Deep dive into the implementation with file descriptions, capabilities, and next steps.</p>
+                <a href="IMPLEMENTATION_SUMMARY.md">View Details</a>
+            </div>
+            
+            <div class="doc-card">
+                <h2>⚙️ Configuration</h2>
+                <p>Core API configuration file with helper functions, middleware, and utility methods.</p>
+                <a href="config.php">View Config File</a>
+            </div>
+        </div>
+        
+        <div class="endpoints-section">
+            <h2>API Endpoints Overview</h2>
+            
+            <div class="endpoint-group">
+                <h3>🔐 Authentication (2 endpoints)</h3>
+                <div class="endpoint post">
+                    <span class="method POST">POST</span> /api/login.php
+                </div>
+                <div class="endpoint post">
+                    <span class="method POST">POST</span> /api/register.php
+                </div>
+            </div>
+            
+            <div class="endpoint-group">
+                <h3>🏠 Properties (3 endpoints)</h3>
+                <div class="endpoint get">
+                    <span class="method GET">GET</span> /api/get_properties.php
+                </div>
+                <div class="endpoint get">
+                    <span class="method GET">GET</span> /api/get_property_details.php
+                </div>
+                <div class="endpoint get">
+                    <span class="method GET">GET</span> /api/search_properties.php
+                </div>
+            </div>
+            
+            <div class="endpoint-group">
+                <h3>❤️ Saved Properties (2 endpoints)</h3>
+                <div class="endpoint post">
+                    <span class="method POST">POST</span> /api/save_property.php
+                </div>
+                <div class="endpoint post">
+                    <span class="method POST">POST</span> /api/unsave_property.php
+                </div>
+            </div>
+            
+            <div class="endpoint-group">
+                <h3>📅 Bookings (2 endpoints)</h3>
+                <div class="endpoint post">
+                    <span class="method POST">POST</span> /api/create_booking.php
+                </div>
+                <div class="endpoint get">
+                    <span class="method GET">GET</span> /api/get_my_bookings.php
+                </div>
+            </div>
+            
+            <p style="margin-top: 20px; color: #666;"><strong>Total: 9 API Endpoints</strong> covering authentication, property browsing, favorites, and bookings.</p>
+        </div>
+        
+        <div class="features-section">
+            <h2>Key Features</h2>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <h3>✅ Authentication</h3>
+                    <p>User login and registration with role-based access control (student, landlord, admin).</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🔍 Property Search</h3>
+                    <p>Full-text search with filters by type, city, price range, and sorting options.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📄 Detailed Information</h3>
+                    <p>Property details with images, landlord information, and availability status.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>❤️ Favorites</h3>
+                    <p>Save and unsave properties for later viewing.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📅 Booking System</h3>
+                    <p>Create bookings with automatic rent calculation and status tracking.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>🔒 Security</h3>
+                    <p>Prepared statements, password hashing, input validation, and role-based authorization.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📱 Mobile-Ready</h3>
+                    <p>JSON responses optimized for mobile applications and cross-platform development.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📊 Pagination</h3>
+                    <p>Efficient data retrieval with customizable page size and sorting.</p>
+                </div>
+                <div class="feature-item">
+                    <h3>📝 Logging</h3>
+                    <p>Complete activity logging to /logs/api.log for debugging and monitoring.</p>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p><strong>e_rentalHub API</strong> - RESTful API Layer for Mobile and Web Applications</p>
+            <p>Created: December 4, 2025 | Status: Production Ready</p>
+            <p>9 Endpoints | 15 Files | 50+ KB of Code</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,49 @@
+[2025-12-04 15:01:46] GET get_properties - SUCCESS - Retrieved 20 properties (page 1)
+[2025-12-04 16:08:55] POST login - FAILURE - Prepare failed: Unknown column 'id' in 'field list'
+[2025-12-04 16:10:34] POST login - FAILURE - Prepare failed: Unknown column 'id' in 'field list'
+[2025-12-04 16:13:13] POST login - FAILURE - Prepare failed: Unknown column 'id' in 'field list'
+[2025-12-04 16:16:04] POST login - SUCCESS - User logged in: student@example.com
+[2025-12-04 16:17:41] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 16:25:28] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 16:25:29] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 16:25:48] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 16:29:24] GET get_properties - SUCCESS - Retrieved 1 properties (page 1)
+[2025-12-04 16:37:15] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 16:37:15] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 16:46:17] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 16:46:17] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:05:17] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 17:05:18] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:14:15] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 17:14:15] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:21:39] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 17:21:39] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:21:47] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:41:13] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 17:41:13] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:50:54] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 17:50:55] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 17:52:54] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-04 18:01:20] POST login - SUCCESS - User logged in: teststudent@gmail.com
+[2025-12-04 18:01:21] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2025-12-06 10:30:07] GET get_saved_properties_count - SUCCESS - Retrieved saved properties count 9 for student 1
+[2025-12-06 10:30:11] GET get_my_bookings_count - SUCCESS - Retrieved bookings count 4 for student 1
+[2025-12-06 10:32:32] GET get_saved_properties_count - SUCCESS - Retrieved saved properties count 9 for student 1
+[2025-12-06 10:32:33] GET get_my_bookings_count - SUCCESS - Retrieved bookings count 4 for student 1
+[2025-12-06 10:32:40] GET get_saved_properties_count - SUCCESS - Retrieved saved properties count 8 for student 1
+[2025-12-06 10:32:40] GET get_my_bookings_count - SUCCESS - Retrieved bookings count 4 for student 1
+[2026-01-18 16:28:56] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:36:22] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:36:46] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:39:36] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:39:56] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:43:47] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:47:17] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:50:34] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:53:35] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:57:51] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:59:12] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 16:59:35] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 17:05:08] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 17:05:46] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)
+[2026-01-18 17:06:00] GET get_properties - SUCCESS - Retrieved 10 properties (page 1)

@@ -337,7 +337,7 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
                                 <label class="fw-semibold">Property Type*</label>
                                 <select name="type" id="propertyType" class="form-select" required>
                                     <option value="" disabled selected>All type</option>
-                                    <option value="Sstudio">Studio</option>
+                                    <option value="Studio">Studio</option>
                                     <option value="bedsitter">Bedsitter</option>
                                     <option value="apartment">Apartment</option>
                                     <option value="single_room">Single Room</option>

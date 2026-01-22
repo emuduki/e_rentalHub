@@ -470,10 +470,6 @@ if (empty($imageUrls)) {
                             </select>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="notes" class="form-label">Additional Notes (Optional)</label>
-                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Any questions or special requests..."></textarea>
-                        </div>
 
                         <div class="alert alert-info">
                             <strong>Property:</strong> <?= htmlspecialchars($property['title']) ?><br>

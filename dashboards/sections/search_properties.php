@@ -9,6 +9,7 @@ $student_id = intval($_SESSION['user_id'] ?? 0);
 // read filters
 $q = trim($_GET['q'] ?? '');
 $city = trim($_GET['city'] ?? '');
+$property_type = trim($_GET['property_type'] ?? '');
 
 // build query
 $where = "WHERE p.status='Available'";
@@ -18,7 +19,11 @@ if ($q !== '') {
 }
 if ($city !== '') {
     $safeCity = $conn->real_escape_string($city);
-    $where .= " AND p.city = '$safeCity'";
+    $where .= " AND LOWER(p.city) LIKE LOWER('%$safeCity%')";
+}
+if ($property_type !== '') {
+    $safeType = $conn->real_escape_string($property_type);
+    $where .= " AND LOWER(p.type) = LOWER('$safeType')";
 }
 
 // ensure student_id is an integer (avoid accidental SQL issues)
@@ -337,17 +342,29 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
 
         <form class="container search-form" method="get">
             <div class="row g-2 align-items-center">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <div class="input-group bg-white rounded-pill px-2">
                         <span class="input-group-text bg-transparent border-0"><i class="bi bi-search"></i></span>
-                        <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" class="form-control border-0" placeholder="Search by name or location">
+                        <input type="text" name="q" value="<?= htmlspecialchars($q) ?>" class="form-control border-0" placeholder="Search by location">
                     </div>
                 </div>
                 <div class="col-md-3">
                     <input type="text" name="city" value="<?= htmlspecialchars($city) ?>" class="form-control rounded-pill" placeholder="City (optional)">
                 </div>
+                <div class="col-md-3">
+                    <select name="property_type" class="form-control rounded-pill">
+                        <option value="">All Types</option>
+                        <?php
+                        $typesResult = $conn->query("SELECT DISTINCT type FROM properties WHERE status='Available' ORDER BY type");
+                        while ($typeRow = $typesResult->fetch_assoc()) {
+                            $selected = ($property_type === $typeRow['type']) ? 'selected' : '';
+                            echo "<option value=\"" . htmlspecialchars($typeRow['type']) . "\" $selected>" . htmlspecialchars($typeRow['type']) . "</option>";
+                        }
+                        ?>
+                    </select>
+                </div>
                 <div class="col-md-3 d-grid d-md-block">
-                    <button class="btn btn-light text-dark rounded-pill px-4"><i class="bi bi-sliders me-1"></i>Search</button>
+                    <button type="submit" class="btn btn-light text-dark rounded-pill px-4"><i class="bi bi-sliders me-1"></i>Search</button>
                 </div>
             </div>
         </form>

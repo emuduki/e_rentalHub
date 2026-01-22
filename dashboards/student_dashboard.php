@@ -362,92 +362,96 @@ if (!empty($student_profile['avatar'])) {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const sidebar = document.getElementById("sidebar");
-  const toggle = document.getElementById("sidebarToggle");
-  const content = document.getElementById("content");
+    const sidebar = document.getElementById("sidebar");
+    const toggle = document.getElementById("sidebarToggle");
+    const content = document.getElementById("content");
 
-  toggle.addEventListener("click", () => {
-    sidebar.classList.toggle("collapsed");
-    const isCollapsed = sidebar.classList.contains('collapsed');
-    content.style.marginLeft = isCollapsed ? '0' : '260px';
-  });
+    toggle.addEventListener("click", () => {
+        sidebar.classList.toggle("collapsed");
+        const isCollapsed = sidebar.classList.contains('collapsed');
+        content.style.marginLeft = isCollapsed ? '0' : '260px';
+    });
 
-    window.loadSection = function(section, el = null) {
-        const url = '/e_rentalHub/dashboards/sections/' + section + '.php';
-        console.debug('Loading section', section, 'from', url);
+    function executeScripts(container) {
+        Array.from(container.querySelectorAll('script')).forEach(old => {
+            try {
+                const newScript = document.createElement('script');
+                if (old.src) {
+                    newScript.src = old.src;
+                    newScript.async = false;
+                } else {
+                    newScript.text = old.textContent;
+                }
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+            } catch (err) {
+                console.warn('Failed to execute injected script', err);
+            }
+        });
+    }
+
+    function loadUrl(url, contentContainer, el = null) {
+        console.debug('Loading from', url);
         fetch(url, { credentials: 'same-origin' })
             .then(res => {
-                console.debug('Section fetch status:', res.status, res.statusText);
-                if (!res.ok) throw new Error('Failed to load section: ' + res.status + ' ' + res.statusText);
+                if (!res.ok) throw new Error('Failed to load: ' + res.statusText);
                 return res.text();
             })
             .then(html => {
-                console.debug('Loaded section HTML length:', html.length);
-                // If the server returned an empty response, show a helpful message
                 if (!html || !html.trim()) {
-                    content.innerHTML = '<div class="alert alert-warning">Section returned empty content.</div>';
+                    contentContainer.innerHTML = '<div class="alert alert-warning">Section returned empty content.</div>';
                 } else {
-                    content.innerHTML = html;
-
-                    // Execute any inline scripts from the injected HTML so event handlers get bound
-                    Array.from(content.querySelectorAll('script')).forEach(old => {
-                        try {
-                            const newScript = document.createElement('script');
-                            if (old.src) {
-                                newScript.src = old.src;
-                                // Ensure the script loads in same-origin context
-                                newScript.async = false;
-                            } else {
-                                newScript.text = old.textContent;
-                            }
-                            document.body.appendChild(newScript);
-                            document.body.removeChild(newScript);
-                        } catch (err) {
-                            console.warn('Failed to execute injected script', err);
-                        }
-                    });
+                    contentContainer.innerHTML = html;
+                    executeScripts(contentContainer);
                 }
 
-                // Remove active from all links and add to the matching link
-                document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
-                if (el) el.classList.add('active');
+                if (el) {
+                    document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
+                    el.classList.add('active');
+                }
             })
             .catch(err => {
-                console.error("Error loading section:", err);
-                content.innerHTML = '<div class="alert alert-danger">Could not load section: ' + err.message + '</div>';
+                console.error("Error loading content:", err);
+                contentContainer.innerHTML = '<div class="alert alert-danger">Could not load content: ' + err.message + '</div>';
             });
+    }
+
+    window.loadSection = function(section, el = null) {
+        const url = '/e_rentalHub/dashboards/sections/' + section + '.php';
+        loadUrl(url, content, el);
     };
 
+    content.addEventListener('submit', function(e) {
+        const form = e.target;
+        if (form.matches('.search-form')) {
+            e.preventDefault();
+            const formData = new URLSearchParams(new FormData(form));
+            const url = '/e_rentalHub/dashboards/sections/search_properties.php?' + formData.toString();
+            loadUrl(url, content);
+        }
+    });
 
-
-    // Default section load: mark the link active when loading
+    // Default section load
     const searchLink = document.querySelector('.sidebar a[onclick*="search_properties"]');
     loadSection("search_properties", searchLink);
 
     // Global delegated listener for save/unsave heart buttons
-    // Handles clicks for any loaded section and ensures same behavior when sections are injected via AJAX
     document.body.addEventListener('click', async (e) => {
         const btn = e.target.closest('.fav-btn');
         if (!btn) return;
 
-        // Only process if button has a data-property-id attribute
         const propId = btn.getAttribute('data-property-id') || btn.getAttribute('data-prop-id');
         if (!propId) return;
 
-        // If the user isn't logged in the server endpoint will reject — we still attempt and allow server to respond
         const icon = btn.querySelector('i');
-        const isSaved = btn.dataset.saved === '1' || btn.dataset.saved === 'true' || icon?.classList.contains('bi-heart-fill');
+        const isSaved = btn.dataset.saved === '1' || icon?.classList.contains('bi-heart-fill');
         const action = isSaved ? 'unsave' : 'save';
 
-        // optimistic UI update
+        // Optimistic UI update
         if (icon) {
-            if (action === 'save') {
-                icon.classList.remove('bi-heart');
-                icon.classList.add('bi-heart-fill', 'text-danger');
-            } else {
-                icon.classList.remove('bi-heart-fill', 'text-danger');
-                icon.classList.add('bi-heart');
-            }
+            icon.classList.toggle('bi-heart', action === 'unsave');
+            icon.classList.toggle('bi-heart-fill', action === 'save');
+            icon.classList.toggle('text-danger', action === 'save');
         }
 
         try {
@@ -459,45 +463,24 @@ document.addEventListener("DOMContentLoaded", () => {
             });
             const data = await resp.json();
             if (!data.success) {
-                // revert UI
-                if (icon) {
-                    if (action === 'save') {
-                        icon.classList.remove('bi-heart-fill', 'text-danger');
-                        icon.classList.add('bi-heart');
-                    } else {
-                        icon.classList.remove('bi-heart');
-                        icon.classList.add('bi-heart-fill', 'text-danger');
-                    }
-                }
-                console.error('toggle_save_property failed', data.message);
-                alert(data.message || 'Could not update saved state.');
-                return;
+                throw new Error(data.message || 'Could not update saved state.');
             }
-
-            // success — update dataset
             btn.dataset.saved = action === 'save' ? '1' : '0';
-
-            // If we are on the Saved page and user unsaved the property, remove the card
             if (action === 'unsave') {
-                const containerCard = btn.closest('.col-md-6, .col-lg-4, .booking-card');
-                // remove card only on saved_properties view — detect by existing title text
                 const pageTitle = document.querySelector('#content h4')?.textContent?.toLowerCase() || '';
-                if (pageTitle.includes('saved properties') && containerCard) containerCard.remove();
-            }
-
-        } catch (err) {
-            console.error(err);
-            // revert UI change
-            if (icon) {
-                if (action === 'save') {
-                    icon.classList.remove('bi-heart-fill', 'text-danger');
-                    icon.classList.add('bi-heart');
-                } else {
-                    icon.classList.remove('bi-heart');
-                    icon.classList.add('bi-heart-fill', 'text-danger');
+                if (pageTitle.includes('saved properties')) {
+                    btn.closest('.col-md-6, .col-lg-4, .booking-card')?.remove();
                 }
             }
-            alert('Network error. Please try again.');
+        } catch (err) {
+            console.error('Save property error:', err);
+            alert(err.message);
+            // Revert UI on failure
+            if (icon) {
+                icon.classList.toggle('bi-heart', action === 'save');
+                icon.classList.toggle('bi-heart-fill', action === 'unsave');
+                icon.classList.toggle('text-danger', action === 'unsave');
+            }
         }
     });
 });
