@@ -192,6 +192,7 @@ if (!empty($student_profile['avatar'])) {
             .main-content {
                 margin-left: 200px;
                 padding-top: 72px;
+                padding: 12px;
                 transition: margin-left 0.28s ease;
             }
             .main-content.collapsed {
@@ -219,19 +220,59 @@ if (!empty($student_profile['avatar'])) {
                 padding: 5px 0;
                 font-size: 0.85rem;
             }
+            
+            /* Dashboard content styling for tablet */
+            .card {
+                margin-bottom: 1rem;
+                border-radius: 8px;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            h1, h2 {
+                font-size: 1.5rem;
+            }
+            h3 {
+                font-size: 1.1rem;
+            }
+            .table {
+                font-size: 0.9rem;
+            }
+            .table thead th {
+                padding: 0.5rem;
+            }
+            .table tbody td {
+                padding: 0.5rem;
+            }
+            .btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.9rem;
+            }
+            .form-control,
+            .form-select {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.9rem;
+            }
         }
 
         @media (max-width: 576px) {
             .sidebar {
                 min-width: 160px;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                height: calc(100vh - 56px);
+                z-index: 1050;
+                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
             }
             .sidebar.collapsed {
                 transform: translateX(-160px);
             }
             .main-content {
-                margin-left: 0;
-                padding: 16px;
+                margin-left: 0 !important;
+                padding: 10px;
                 transition: none;
+                width: 100%;
             }
             .main-content.collapsed {
                 margin-left: 0;
@@ -264,12 +305,50 @@ if (!empty($student_profile['avatar'])) {
                 margin-bottom: 10px;
             }
             .bottom-section .d-flex {
-                font-size: 0.8rem;
-                margin-bottom: 6px;
+                font-size: 0.75rem;
+                margin-bottom: 10px;
+                align-items: center;
+                gap: 4px;
+                background: #f8f9fa;
+                padding: 6px 8px;
+                border-radius: 6px;
             }
-            .bottom-section .d-flex img,
+            .bottom-section .d-flex img {
+                width: 18px !important;
+                height: 18px !important;
+                object-fit: cover;
+                flex: 0 0 18px;
+                border-radius: 50%;
+                display: block;
+            }
+            .bottom-section .d-flex .rounded-circle {
+                width: 18px !important;
+                height: 18px !important;
+                flex: 0 0 18px;
+                border-radius: 50%;
+                display: block;
+            }
             .bottom-section .d-flex > div {
-                display: none;
+                flex: 1;
+                min-width: 0;
+                display: block !important;
+                line-height: 1.2;
+            }
+            .bottom-section .d-flex > div strong {
+                display: block;
+                font-size: 0.73rem;
+                font-weight: 600;
+                color: #212529;
+                margin-bottom: 1px;
+                word-break: break-word;
+                white-space: normal;
+            }
+            .bottom-section .d-flex > div small {
+                display: block;
+                font-size: 0.63rem;
+                color: #6c757d;
+                word-break: break-word;
+                white-space: normal;
             }
             .bottom-section a,
             .bottom-section .btn {
@@ -278,6 +357,201 @@ if (!empty($student_profile['avatar'])) {
             }
             .bottom-section .btn i {
                 font-size: 0.9rem;
+            }
+            
+            /* Dashboard content styling for mobile */
+            h1 {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+            h2 {
+                font-size: 1.1rem;
+                margin-bottom: 0.5rem;
+            }
+            h3 {
+                font-size: 0.95rem;
+            }
+            
+            .card {
+                margin-bottom: 0.75rem;
+                border-radius: 6px;
+                border: 1px solid #e9ecef;
+            }
+            
+            .card-body {
+                padding: 0.75rem;
+            }
+            
+            .card-header {
+                padding: 0.75rem;
+            }
+            
+            .table {
+                font-size: 0.8rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .table thead th {
+                padding: 0.4rem 0.25rem;
+                font-size: 0.75rem;
+            }
+            
+            .table tbody td {
+                padding: 0.4rem 0.25rem;
+                font-size: 0.75rem;
+            }
+            
+            .btn {
+                padding: 0.35rem 0.6rem;
+                font-size: 0.8rem;
+                border-radius: 4px;
+            }
+            
+            .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+            }
+            
+            .form-control,
+            .form-select {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.85rem;
+                border-radius: 4px;
+            }
+            
+            .form-label {
+                font-size: 0.85rem;
+                margin-bottom: 0.3rem;
+            }
+            
+            .alert {
+                padding: 0.75rem;
+                font-size: 0.85rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .badge {
+                font-size: 0.7rem;
+                padding: 0.25rem 0.5rem;
+            }
+            
+            .row {
+                margin-right: -5px;
+                margin-left: -5px;
+            }
+            
+            .col, [class*='col-'] {
+                padding-right: 5px;
+                padding-left: 5px;
+            }
+            
+            .mb-4 {
+                margin-bottom: 0.75rem !important;
+            }
+            
+            .mb-3 {
+                margin-bottom: 0.5rem !important;
+            }
+            
+            .p-3 {
+                padding: 0.75rem !important;
+            }
+            
+            .p-4 {
+                padding: 1rem !important;
+            }
+            
+            /* Booking card mobile styling */
+            .booking-card {
+                padding: 8px !important;
+                margin-bottom: 10px !important;
+                border-radius: 6px !important;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+            }
+            
+            .booking-img {
+                width: 70px !important;
+                height: 60px !important;
+                border-radius: 4px !important;
+                object-fit: cover;
+            }
+            
+            .booking-row {
+                gap: 8px !important;
+                align-items: flex-start;
+            }
+            
+            .booking-row > .flex-shrink-0 {
+                flex-shrink: 0;
+            }
+            
+            .booking-row > div:not(.flex-shrink-0) {
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .booking-row .d-flex {
+                flex-direction: column;
+                gap: 2px;
+            }
+            
+            .booking-title {
+                font-size: 0.85rem !important;
+                font-weight: 600;
+                margin-bottom: 2px;
+                line-height: 1.2;
+                word-break: break-word;
+            }
+            
+            .booking-badge {
+                font-size: 0.65rem !important;
+                padding: 0.2rem 0.4rem !important;
+                width: fit-content;
+            }
+            
+            .small-muted {
+                font-size: 0.7rem;
+                color: #6c757d;
+                margin-bottom: 4px;
+            }
+            
+            .booking-row .row {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr;
+                gap: 6px 4px !important;
+                margin-top: 6px !important;
+                width: 100%;
+            }
+            
+            .booking-row .row > div {
+                padding: 0 !important;
+                font-size: 0.7rem;
+                display: flex;
+                flex-direction: column;
+                gap: 1px;
+            }
+            
+            .booking-row .row > div .small-muted {
+                font-size: 0.65rem;
+                margin-bottom: 0;
+            }
+            
+            .booking-row .row > div > div:not(.small-muted) {
+                font-size: 0.75rem;
+                font-weight: 500;
+            }
+            
+            .booking-actions {
+                margin-top: 8px !important;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 4px;
+            }
+            
+            .booking-actions .btn {
+                padding: 0.25rem 0.5rem !important;
+                font-size: 0.7rem !important;
+                margin: 0 !important;
             }
         }
     

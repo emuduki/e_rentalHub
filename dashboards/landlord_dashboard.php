@@ -217,7 +217,85 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
         .drag-area input {
             cursor: pointer;
         }
-       
+
+        /* Tablet adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                min-width: 200px;
+            }
+            .sidebar.collapsed {
+                transform: translateX(-200px);
+            }
+            .main-content {
+                margin-left: 200px;
+                padding: 16px;
+                transition: margin-left 0.28s ease;
+                padding-top: 72px;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+            .sidebar ul li a {
+                padding: 6px 10px;
+                font-size: 0.95rem;
+            }
+            .sidebar .badge {
+                font-size: 0.65rem;
+                padding: 2px 5px;
+            }
+            .add-btn-container {
+                padding: 12px;
+            }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 576px) {
+            .sidebar {
+                min-width: 170px;
+                position: fixed;
+                top: 56px;
+                left: 0;
+                height: calc(100vh - 56px);
+                z-index: 1050;
+                box-shadow: 2px 0 6px rgba(0, 0, 0, 0.2);
+            }
+            .sidebar.collapsed {
+                transform: translateX(-170px);
+            }
+            .main-content {
+                margin-left: 0 !important;
+                padding: 12px;
+                transition: none;
+                width: 100%;
+                padding-top: 72px;
+            }
+            .main-content.collapsed {
+                margin-left: 0;
+            }
+            .sidebar ul {
+                gap: 6px;
+                padding-top: 8px;
+            }
+            .sidebar ul li {
+                margin: 0 6px;
+            }
+            .sidebar ul li a {
+                padding: 6px 8px;
+                font-size: 0.85rem;
+            }
+            .sidebar .badge {
+                font-size: 0.6rem;
+                padding: 2px 5px;
+                right: 8px;
+            }
+            .add-btn-container {
+                padding: 10px;
+            }
+            .add-btn {
+                padding: 10px 14px;
+                font-size: 0.9rem;
+            }
+        }
 
 
 </style>
@@ -412,18 +490,28 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-document.getElementById('sidebarToggle').addEventListener('click', function () {
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
+const sidebar = document.querySelector('.sidebar');
+const mainContent = document.querySelector('.main-content');
+const sidebarToggle = document.getElementById('sidebarToggle');
 
-    sidebar.classList.toggle('collapsed');
+function applyLayout() {
+    const isTablet = window.innerWidth <= 768;
+    const isMobile = window.innerWidth <= 576;
+    const sidebarWidth = isMobile ? 170 : isTablet ? 200 : 260;
 
     if (sidebar.classList.contains('collapsed')) {
-        mainContent.style.marginLeft = "0";  // Adjust content width when collapsed
+        mainContent.style.marginLeft = '0';
     } else {
-        mainContent.style.marginLeft = "260px"; // Same width as sidebar
+        mainContent.style.marginLeft = isMobile ? '0' : `${sidebarWidth}px`;
     }
+}
+
+sidebarToggle.addEventListener('click', function () {
+    sidebar.classList.toggle('collapsed');
+    applyLayout();
 });
+
+window.addEventListener('resize', applyLayout);
 </script>
 
 <script>
@@ -466,14 +554,7 @@ function loadSection(section) {
 
 // Ensure main content has left margin to accommodate sidebar on initial load
 document.addEventListener('DOMContentLoaded', function() {
-    const sidebar = document.querySelector('.sidebar');
-    const mainContent = document.querySelector('.main-content');
-    if (!sidebar.classList.contains('collapsed')) {
-        mainContent.style.marginLeft = "260px";
-    } else {
-        mainContent.style.marginLeft = "0";
-    }
-
+    applyLayout();
     // Load default section
     loadSection('overview');
 });

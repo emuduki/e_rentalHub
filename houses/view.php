@@ -238,19 +238,111 @@ if (empty($imageUrls)) {
             color: #2563eb;
         }
         @media (max-width: 768px) {
+            body {
+                padding-top: 10px;
+            }
+            
+            .property-header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+            
+            .property-header h1 {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
+            
+            .price-badge {
+                font-size: 1.25rem;
+                padding: 0.75rem 1.5rem;
+                margin-bottom: 0.75rem;
+            }
+            
             .features-grid {
                 grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+                margin-top: 0.75rem;
             }
+            
+            .feature-item {
+                gap: 0.5rem;
+            }
+            
+            .feature-icon {
+                font-size: 1.25rem;
+            }
+            
             .image-gallery {
                 grid-template-columns: 1fr;
+                gap: 8px;
+                margin-bottom: 1.5rem;
             }
+            
+            .main-image {
+                height: 300px;
+                border-radius: 8px;
+            }
+            
             .side-images {
                 grid-template-columns: repeat(3, 1fr);
                 grid-template-rows: auto;
+                gap: 8px;
             }
+            
             .side-image {
-                height: 120px;
+                height: 100px;
+                border-radius: 8px;
             }
+            
+            .property-layout {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .property-main {
+                flex: 1 1 100%;
+            }
+            
+            .property-sidebar {
+                flex: 1 1 100%;
+            }
+            
+            .property-info {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+                border-radius: 8px;
+            }
+            
+            .section-title {
+                font-size: 1.25rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .location-info {
+                font-size: 0.9rem;
+                margin-bottom: 0.75rem;
+            }
+            
+            .modal-image {
+                max-height: 70vh;
+            }
+            
+            .location-info-box {
+                padding: 1.5rem;
+                border-radius: 8px;
+            }
+            
+            .footer-contact-item {
+                gap: 0.5rem;
+                margin-bottom: 0.75rem;
+                font-size: 0.9rem;
+            }
+            
+            .container {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+        }
 
     </style>
 </head>

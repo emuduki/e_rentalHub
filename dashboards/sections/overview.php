@@ -295,16 +295,36 @@ $revenue_growth = 0;
             background-color: #f9fafb;
         }
 
+        /* Mobile layout: top stat cards 2 per row */
+        @media (max-width: 576px) {
+            .stat-row {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .stat-row > .col-md-6 {
+                display: contents;
+                padding: 0 !important;
+            }
+            .stat-row .stat-card {
+                margin: 0;
+                height: 100%;
+            }
+            .overview-wrapper {
+                padding-top: 40px !important;
+            }
+        }
+
     </style>
     </head>
 
     <body class="bg-light">
-    <div class="container-fluid" style="padding-top: 56px;">
+    <div class="container-fluid overview-wrapper" style="padding-top: 56px;">
         <h4 class="fw-bold mb-2">Landlord Dashboard</h4>
         <p class="text-muted mb-4">Manage your properties and bookings</p>
 
         <!--Top Stat Cards-->
-        <div class="row g-3 mb-4">
+        <div class="row g-3 mb-4 stat-row">
             <div class="col-md-6">
                 <div class="stat-card mb-2">
                     <div class="d-flex justify-content-between">
