@@ -105,7 +105,7 @@
         /* Hero Section */
        .hero-section {
                 position: relative;
-                height: calc(110vh - 70px);
+                height: calc(100vh - 70px);
                 width: 100%;
                 color: #fff;
                 display: flex;
@@ -788,6 +788,61 @@
             color: white;
         }
 
+        /* Property card styles */
+        .property-card {
+            transition: transform 0.2s;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+
+        .property-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .prop-badge {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            z-index: 2;
+            padding: .35rem .6rem;
+            border-radius: 12px;
+            background: rgba(255,255,255,0.95);
+            color: #111;
+            border: 1px solid rgba(0,0,0,0.06);
+            backdrop-filter: blur(2px);
+            font-size: 0.75rem;
+        }
+
+        .fav-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            z-index: 2;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            padding: 0;
+        }
+
+        .fav-btn:hover {
+            background: white;
+        }
+
+        .fav-btn i {
+            font-size: 1.1rem;
+        }
+
+        .property-card .meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+
         @media (max-width: 768px) {
             .footer-bottom-content {
                 flex-direction: column;
@@ -928,9 +983,9 @@
         @media (max-width: 576px) {
             .hero-section {
                 height: auto;
-                padding: 5rem 1rem 4.5rem 1rem;
+                padding: 3.5rem 1rem 4.5rem 1rem;
                 background-attachment: scroll;
-                margin-top: 0;
+                margin-top: 3.5rem;
                 min-height: 65vh;
             }
 
@@ -939,59 +994,67 @@
                 padding: 0;
             }
 
+            .hero-content.container {
+                max-width: 100%;
+                padding-left: 0.35rem;
+                padding-right: 0.35rem;
+            }
+
             .hero-title {
-                font-size: 1.25rem;
-                margin-bottom: 0.5rem;
+                font-size: 2.6rem;
+                margin-bottom: 0.85rem;
             }
 
             .hero-subtitle {
-                font-size: 0.8rem;
-                margin-bottom: 1rem;
+                font-size: 1.7rem;
+                margin-bottom: 1.35rem;
             }
 
             .search-bar {
-                padding: 0.5rem;
-                gap: 0.3rem;
+                padding: 0.35rem;
+                gap: 0.2rem;
                 flex-direction: row;
-                flex-wrap: wrap;
+                flex-wrap: nowrap !important;
                 display: flex;
                 align-items: center;
+                overflow-x: auto;
+                width: 100%;
             }
 
             .search-bar .d-flex {
                 width: auto;
                 flex: 1;
-                min-width: 100px;
+                min-width: 80px;
             }
 
             .search-input-group {
                 flex: 1;
-                min-width: 120px;
+                min-width: 100px;
             }
 
             .location-select {
-                flex: 0.8;
-                min-width: 90px;
-                padding: 0.4rem;
-                font-size: 0.85rem;
+                flex: 0.7;
+                min-width: 80px;
+                padding: 0.35rem;
+                font-size: 0.8rem;
             }
 
             .btn-search {
                 flex: 0 0 auto;
-                padding: 0.4rem 0.6rem;
-                font-size: 0.9rem;
-                min-width: 50px;
+                padding: 0.35rem 0.5rem;
+                font-size: 0.85rem;
+                min-width: 46px;
             }
 
             .search-input {
-                font-size: 16px;
-                padding: 0.4rem 0.4rem 0.4rem 2rem;
+                font-size: 0.95rem;
+                padding: 0.35rem 0.35rem 0.35rem 1.8rem;
                 width: 100%;
             }
 
             .search-input-group i {
-                left: 0.5rem;
-                font-size: 0.9rem;
+                left: 0.45rem;
+                font-size: 0.85rem;
             }
 
             .section-title {
@@ -1201,7 +1264,6 @@
         @media (max-width: 480px) {
             .hero-section {
                 padding: 4.5rem 0.75rem 2rem 0.75rem;
-                margin-top: 70px;
             }
 
             .hero-title {
@@ -2009,6 +2071,17 @@
 
 					carousel.addEventListener('mouseleave', function() {
 						bsCarousel.pause();
+					});
+				});
+
+				// Add click handlers for favorite buttons
+				const favBtns = row.querySelectorAll('.fav-btn');
+				favBtns.forEach(btn => {
+					btn.addEventListener('click', function(e) {
+						e.preventDefault();
+						// Show login modal since user is not logged in on homepage
+						const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+						loginModal.show();
 					});
 				});
 			})

@@ -313,6 +313,27 @@ $revenue_growth = 0;
             .overview-wrapper {
                 padding-top: 40px !important;
             }
+            .quick-actions-wrapper {
+                padding: 1rem;
+                margin-bottom: 1.5rem;
+            }
+            .quick-actions-wrapper h6 {
+                font-size: 1rem;
+                margin-bottom: 1rem !important;
+            }
+            .quick-actions {
+                gap: 0.8rem;
+            }
+            .action-card {
+                flex: 0 0 calc(50% - 0.4rem);
+                min-width: auto;
+                padding: 1rem 0.8rem;
+                font-size: 0.85rem;
+            }
+            .action-card i {
+                font-size: 1.5rem;
+                margin-bottom: 0.5rem;
+            }
         }
 
     </style>

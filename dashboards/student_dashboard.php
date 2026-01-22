@@ -256,6 +256,10 @@ if (!empty($student_profile['avatar'])) {
         }
 
         @media (max-width: 576px) {
+            .navbar {
+                background-color: white !important;
+                background: white !important;
+            }
             .sidebar {
                 min-width: 160px;
                 position: fixed;

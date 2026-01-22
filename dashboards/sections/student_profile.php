@@ -68,6 +68,79 @@ if (!empty($profile['avatar'])) {
 		.kv{color:#6c757d}
 		.card-section{border-radius:16px;border:1px solid rgba(0,0,0,0.06)}
 		.section-title{font-weight:700}
+
+		@media (max-width: 576px) {
+			.container {
+				padding: 0.5rem 0.1rem;
+			}
+			.profile-wrapper {
+				padding: 0.5rem 0 !important;
+				margin-top: 0.5rem !important;
+			}
+			.profile-wrapper h4 {
+				font-size: 1.2rem;
+				margin-bottom: 0.3rem;
+			}
+			.profile-wrapper p {
+				font-size: 0.85rem;
+			}
+			.profile-header {
+				padding: 1rem;
+				flex-direction: column;
+				text-align: center;
+				margin-bottom: 1rem !important;
+			}
+			.profile-header .position-relative {
+				margin-bottom: 0.5rem;
+			}
+			.profile-header .flex-grow-1 {
+				width: 100%;
+			}
+			.profile-header h5 {
+				font-size: 1.1rem;
+				margin-bottom: 0.25rem;
+			}
+			.profile-header p {
+				font-size: 0.8rem;
+				margin-bottom: 0.2rem !important;
+			}
+			.profile-header .ms-auto {
+				margin-left: 0 !important;
+				width: 100%;
+				margin-top: 0.5rem;
+			}
+			.btn-save {
+				width: 100%;
+				padding: 0.6rem 1rem;
+				font-size: 0.9rem;
+			}
+			.card-section {
+				border-radius: 12px;
+			}
+			.card-body {
+				padding: 1rem;
+			}
+			.section-title {
+				font-size: 1rem;
+				margin-bottom: 1rem !important;
+			}
+			.form-label {
+				font-size: 0.85rem;
+				margin-bottom: 0.3rem;
+			}
+			.form-control, .form-select {
+				font-size: 0.9rem;
+				padding: 0.4rem 0.5rem;
+				border-radius: 8px;
+			}
+			.row.g-3 {
+				gap: 0.8rem !important;
+			}
+			.col-md-6 {
+				flex: 0 0 100%;
+				max-width: 100%;
+			}
+		}
 	</style>
 	</head>
 <body>

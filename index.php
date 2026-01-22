@@ -8,8 +8,12 @@ if (isset($_GET['recent']) && $_GET['recent'] === '1') {
 		SELECT
 			p.id,
 			p.title,
-			CONCAT_WS(', ', p.city, p.address) AS location,
+			p.city,
+			p.address,
 			p.rent,
+			p.type,
+			p.bedrooms,
+			p.area,
 			GROUP_CONCAT(DISTINCT pi.image_path ORDER BY pi.uploaded_at DESC, pi.id DESC LIMIT 4) AS image_paths
 		FROM properties p
 		LEFT JOIN property_images pi ON p.id = pi.property_id
@@ -63,8 +67,14 @@ if (isset($_GET['recent']) && $_GET['recent'] === '1') {
 
 		$id = (int)$p['id'];
 		$title = htmlspecialchars($p['title'] ?? 'Property');
-		$location = htmlspecialchars($p['location'] ?? '');
+		$city = htmlspecialchars($p['city'] ?? '');
+		$address = htmlspecialchars($p['address'] ?? '');
+		$location = $city . ($address ? ', ' . $address : '');
 		$price = number_format((float)($p['rent'] ?? 0));
+		$type = htmlspecialchars($p['type'] ?? 'Apartment');
+		$beds = (int)($p['bedrooms'] ?? 0);
+		$baths = max(1, floor(max(1,$beds)/2));
+		$area = htmlspecialchars($p['area'] ?? '...');
 
 		// Generate image carousel HTML for up to 4 images, like in search_properties.php
 		$imageHtml = '';
@@ -96,17 +106,31 @@ if (isset($_GET['recent']) && $_GET['recent'] === '1') {
 
 		echo '
 		<div class="col-md-4">
-			<div class="card shadow-sm border-0 rounded-4 h-100">
-				' . $imageHtml . '
+			<div class="card property-card shadow-sm border-0 rounded-4 h-100">
+				<div class="position-relative">
+					' . $imageHtml . '
+					<span class="badge bg-light text-dark prop-badge">' . $type . '</span>
+					<button type="button" class="btn btn-light fav-btn shadow-sm" data-property-id="' . $id . '" data-saved="0" aria-label="Save property">
+						<i class="bi bi-heart"></i>
+					</button>
+				</div>
 				<div class="card-body text-start d-flex flex-column">
-					<h5 class="card-title fw-bold">' . $title . '</h5>
-					<p class="text-muted mb-1">
-						<i class="bi bi-geo-alt-fill text-primary"></i> ' . $location . '
+					<h6 class="fw-bold text-truncate mb-2">' . $title . '</h6>
+					<p class="mb-2 text-muted small">
+						<i class="bi bi-geo-alt me-1"></i>' . $location . '
 					</p>
-					<p class="fw-bold text-primary mb-3">
-						KES ' . $price . ' / month
-					</p>
-					<a href="houses/view.php?id=' . $id . '" class="btn btn-dark w-100 rounded-3 mt-auto">View Property</a>
+					<div class="d-flex justify-content-between meta mb-3 small text-muted">
+						<span><i class="bi bi-door-open me-1"></i>' . $beds . ' Bed</span>
+						<span><i class="bi bi-droplet me-1"></i>' . $baths . ' Bath</span>
+						<span><i class="bi bi-rulers me-1"></i>' . $area . ' sqft</span>
+					</div>
+					<div class="d-flex justify-content-between align-items-center mt-auto">
+						<div>
+							<div class="text-primary fw-bold">KES ' . $price . '</div>
+							<small class="text-muted">per month</small>
+						</div>
+						<a href="houses/view.php?id=' . $id . '" class="btn btn-dark btn-sm rounded-pill">View Details</a>
+					</div>
 				</div>
 			</div>
 		</div>';

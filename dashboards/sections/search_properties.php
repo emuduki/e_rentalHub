@@ -239,11 +239,12 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
 
         @media (max-width: 576px) {
             .page-pad {
-                padding: 1rem;
+                padding: 0.05rem 0.1rem 1rem;
+                margin-top: 0;
             }
             .search-hero {
                 padding: 1.2rem 0.6rem;
-                margin-bottom: 0.8rem;
+                margin: 0 0 0.8rem 0;
                 border-radius: 10px;
             }
             .search-hero h2 {
@@ -256,6 +257,12 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
             }
             .search-form {
                 padding: 0 !important;
+                width: 100%;
+            }
+            .search-form.container {
+                max-width: 100%;
+                padding-left: 0;
+                padding-right: 0;
             }
             .search-form .row {
                 display: flex;
@@ -295,8 +302,8 @@ $savedIds = array_fill_keys(array_map('intval', $_SESSION['saved_property_ids'])
                 margin-right: 0.2rem;
             }
             #propertiesContainer .col-md-6.col-lg-4 {
-                flex: 0 0 calc(50% - 0.5rem);
-                max-width: calc(50% - 0.5rem);
+                flex: 0 0 50%;
+                max-width: 50%;
             }
             .property-card img {
                 height: 180px;
@@ -502,6 +509,25 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Handle favorite button clicks
+    const isLoggedIn = <?= !empty($_SESSION['user_id']) && $role === 'student' ? 'true' : 'false' ?>;
+    
+    document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            if (!isLoggedIn) {
+                // Show login prompt modal
+                const loginModal = new bootstrap.Modal(document.getElementById('loginPromptModal'));
+                loginModal.show();
+            } else {
+                // Handle save/unsave functionality (if logged in)
+                // This would typically be handled by parent dashboard's delegated event handler
+                console.log('Save property functionality - handled by parent dashboard');
+            }
+        });
+    });
 });
 // We use a delegated handler attached to the dashboard root (student_dashboard.php) to handle fav buttons.
 // This file no longer binds its own DOMContentLoaded handlers so AJAX-injected content uses the central handler.
@@ -512,15 +538,33 @@ document.addEventListener('DOMContentLoaded', function() {
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="loginPromptModalLabel">Please sign in</h5>
+                <h5 class="modal-title" id="loginPromptModalLabel">Sign In</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                You need to be logged in as a student to save properties. Would you like to log in now?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a href="/e_rentalHub/login.html" class="btn btn-primary">Log in</a>
+                <form action="auth/login.php" method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email address</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="remember">
+                                <label class="form-check-label" for="remember">Remember me</label>
+                            </div>
+                            <a href="#" class="text-decoration-none">Forgot password?</a>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-dark w-100">Sign In</button>
+                    <div class="text-center mt-3">
+                        <p class="mb-0">Don't have an account? <a href="/e_rentalHub/auth/register.php" class="text-decoration-none">Register here</a></p>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

@@ -104,12 +104,18 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 		}
 
 		@media (max-width: 576px) {
+			.navbar, nav, .navbar-light {
+				background-color: white !important;
+				background: white !important;
+			}
 			.container {
-				padding: 1rem 0.5rem;
+				padding: 0.05rem 0.1rem 1rem;
 			}
 			.bg-white {
-				padding: 1rem !important;
-				border-radius: 8px;
+				padding: 0 !important;
+				border-radius: 0;
+				background-color: transparent !important;
+				box-shadow: none !important;
 			}
 			.bg-white h4 {
 				font-size: 1rem;
@@ -121,8 +127,8 @@ $uploadsBaseUrl = "/e_rentalHub/uploads/";
 				font-size: 0.7rem;
 			}
 			.row .col-md-6.col-lg-4 {
-				flex: 0 0 calc(50% - 0.5rem);
-				max-width: calc(50% - 0.5rem);
+				flex: 0 0 50%;
+				max-width: 50%;
 			}
 			.property-card img {
 				height: 180px;
