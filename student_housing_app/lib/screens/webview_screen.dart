@@ -30,7 +30,7 @@ class _WebViewScreenState extends State<WebViewScreen> {
     if (Platform.isAndroid) {
       // For physical devices, use your machine's IP
       // For Android emulator, use 10.0.2.2
-      return 'http://192.168.0.108/e_rentalHub/';
+      return 'http://10.111.3.119/e_rentalHub/';
     } else if (Platform.isIOS) {
       // iOS simulator uses localhost
       // For physical device, replace with your machine's IP (e.g., http://192.168.1.100)
@@ -163,9 +163,25 @@ class _WebViewScreenState extends State<WebViewScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
+                        'URL: ${_getServerUrl()}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontFamily: 'monospace',
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
                         _errorMessage ?? 'Unable to connect',
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontSize: 14),
+                      ),
+                      const SizedBox(height: 15),
+                      const Text(
+                        'Troubleshooting:\n• Make sure Windows Firewall allows port 80\n• Check your PC IP address matches\n• Ensure phone is on same WiFi network',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       const SizedBox(height: 30),
                       ElevatedButton.icon(
