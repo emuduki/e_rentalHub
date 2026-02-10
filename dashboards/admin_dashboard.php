@@ -205,13 +205,27 @@ document.addEventListener("DOMContentLoaded", () => {
   const toggle = document.getElementById("sidebarToggle");
   const content = document.getElementById("content");
 
-  if(toggle && sidebar && content) {
+  function applyLayout() {
+      const isTablet = window.innerWidth <= 768;
+      const isMobile = window.innerWidth <= 576;
+      const sidebarWidth = isMobile ? 170 : isTablet ? 200 : 260;
+
+      if (sidebar.classList.contains('collapsed')) {
+          content.style.marginLeft = '0';
+      } else {
+          content.style.marginLeft = isMobile ? '0' : `${sidebarWidth}px`;
+      }
+  }
+
+  if (toggle && sidebar && content) {
       toggle.addEventListener("click", () => {
-        sidebar.classList.toggle("collapsed");
-        const isCollapsed = sidebar.classList.contains('collapsed');
-        content.style.marginLeft = isCollapsed ? '0' : '260px';
+          sidebar.classList.toggle("collapsed");
+          applyLayout();
       });
   }
+
+  window.addEventListener('resize', applyLayout);
+  applyLayout();
 
     window.loadSection = function(section, el = null) {
         const url = '/e_rentalHub/dashboards/sections/' + section + '.php';

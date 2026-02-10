@@ -147,21 +147,19 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
             transition: all 0.3s ease;
         }
         .drag-area {
-            border: 2px dashed rgba(0,0,0,0.15);
+            border: none;
             border-radius: 12px;
             padding: 32px;
-            background: rgba(0,0,0,0.03);
+            background: transparent;
             cursor: pointer;
             transition: .2s;
         }
 
         .drag-area:hover {
-            border-color: rgba(0,0,0,0.4);
             background: rgba(0,0,0,0.05);
         }
 
         .drag-area.drag-over {
-            border-color: #12be82;
             background: rgba(18, 190, 130, 0.1);
         }
 
@@ -220,6 +218,10 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
 
         /* Tablet adjustments */
         @media (max-width: 768px) {
+            #addPropertyModal .modal-dialog {
+                max-width: 85%;
+                margin: 16px auto;
+            }
             .sidebar {
                 min-width: 200px;
             }
@@ -250,6 +252,10 @@ $totalApproved = $conn->query("SELECT COUNT(*) AS total FROM reservations r JOIN
 
         /* Mobile adjustments */
         @media (max-width: 576px) {
+            #addPropertyModal .modal-dialog {
+                max-width: 96%;
+                margin: 12px auto;
+            }
             .sidebar {
                 min-width: 170px;
                 position: fixed;
@@ -585,7 +591,8 @@ const fileInput = document.getElementById('imageUploadInput');
 dragArea.addEventListener('drop', handleDrop, false);
 
 // Handle click to open file dialog
-dragArea.addEventListener('click', () => {
+dragArea.addEventListener('click', (e) => {
+    if (e.target === fileInput) return;
     fileInput.click();
 });
 
@@ -614,6 +621,10 @@ function handleFiles(files) {
     selectedFiles = selectedFiles.concat(fileArray);
     updateSelectedImagesList();
 }
+
+fileInput.addEventListener('click', function(e) {
+    e.stopPropagation();
+});
 
 fileInput.addEventListener('change', function(e) {
     const files = Array.from(e.target.files);

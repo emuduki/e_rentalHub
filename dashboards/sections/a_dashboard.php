@@ -84,6 +84,48 @@ $recent = array_slice($recent, 0, 6);
         .pending-action-item { padding: 0.9rem; border-radius: 8px; margin-bottom: 0.8rem; }
         .pending-action-item.review { background-color: #fffacd; }
         .pending-action-item.view { background-color: #ffe6e6; }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 12px;
+                padding-right: 12px;
+            }
+            .stat-number {
+                font-size: 1.75rem;
+            }
+            .admin-stats .card {
+                padding: 12px !important;
+            }
+            .recent-item {
+                padding: 0.75rem 0.85rem;
+            }
+            .pending-action-item {
+                padding: 0.75rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            h2 {
+                font-size: 1.5rem;
+            }
+            .stat-number {
+                font-size: 1.5rem;
+            }
+            .stat-sub {
+                font-size: 0.8rem;
+            }
+            .admin-stats .card {
+                border-radius: 10px;
+            }
+            .pending-action-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+            .pending-action-item .btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -93,7 +135,7 @@ $recent = array_slice($recent, 0, 6);
         <p class="text-muted">Welcome back! Here's what's happening with your platform.</p>
 
         <div class="row g-3 admin-stats mb-4">
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -106,7 +148,7 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -119,7 +161,7 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -132,7 +174,7 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -145,7 +187,7 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
@@ -158,7 +200,7 @@ $recent = array_slice($recent, 0, 6);
                 </div>
             </div>
 
-            <div class="col-md-4">
+            <div class="col-6 col-md-4">
                 <div class="card p-3">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>

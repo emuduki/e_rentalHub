@@ -43,6 +43,75 @@ $result = $q->get_result();
 $total_revenue = $result ? ($result->fetch_assoc()['total_revenue'] ?? 0) : 0;
 $q->close();
 
+//PENDING REVENUE
+if ($is_admin) {
+    $pending_q = $conn->prepare("SELECT SUM(amount) AS total_pending FROM reservations WHERE status='pending'");
+    $pending_q->execute();
+} else {
+    $pending_q = $conn->prepare("SELECT SUM(amount) AS total_pending FROM reservations WHERE landlord_id=? AND status='pending'");
+    $pending_q->bind_param("i", $landlord_id);
+    $pending_q->execute();
+}
+$pending_result = $pending_q->get_result();
+$pending_revenue = $pending_result ? ($pending_result->fetch_assoc()['total_pending'] ?? 0) : 0;
+$pending_q->close();
+
+//THIS MONTH REVENUE
+if ($is_admin) {
+    $this_q = $conn->prepare("SELECT SUM(amount) AS total_month FROM reservations WHERE status='confirmed' AND YEAR(created_at)=YEAR(CURDATE()) AND MONTH(created_at)=MONTH(CURDATE())");
+    $this_q->execute();
+} else {
+    $this_q = $conn->prepare("SELECT SUM(amount) AS total_month FROM reservations WHERE landlord_id=? AND status='confirmed' AND YEAR(created_at)=YEAR(CURDATE()) AND MONTH(created_at)=MONTH(CURDATE())");
+    $this_q->bind_param("i", $landlord_id);
+    $this_q->execute();
+}
+$this_result = $this_q->get_result();
+$this_month_revenue = $this_result ? ($this_result->fetch_assoc()['total_month'] ?? 0) : 0;
+$this_q->close();
+
+//LAST 30 DAYS REVENUE
+if ($is_admin) {
+    $last30_q = $conn->prepare("SELECT SUM(amount) AS total_30 FROM reservations WHERE status='confirmed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $last30_q->execute();
+} else {
+    $last30_q = $conn->prepare("SELECT SUM(amount) AS total_30 FROM reservations WHERE landlord_id=? AND status='confirmed' AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)");
+    $last30_q->bind_param("i", $landlord_id);
+    $last30_q->execute();
+}
+$last30_result = $last30_q->get_result();
+$last30_revenue = $last30_result ? ($last30_result->fetch_assoc()['total_30'] ?? 0) : 0;
+$last30_q->close();
+
+//TOTAL BOOKINGS
+if ($is_admin) {
+    $bookings_q = $conn->prepare("SELECT COUNT(*) AS total_bookings FROM reservations");
+    $bookings_q->execute();
+} else {
+    $bookings_q = $conn->prepare("SELECT COUNT(*) AS total_bookings FROM reservations WHERE landlord_id=?");
+    $bookings_q->bind_param("i", $landlord_id);
+    $bookings_q->execute();
+}
+$bookings_result = $bookings_q->get_result();
+$total_bookings = $bookings_result ? ($bookings_result->fetch_assoc()['total_bookings'] ?? 0) : 0;
+$bookings_q->close();
+
+//AVG BOOKING VALUE
+if ($is_admin) {
+    $avg_q = $conn->prepare("SELECT AVG(amount) AS avg_amount FROM reservations WHERE status='confirmed'");
+    $avg_q->execute();
+} else {
+    $avg_q = $conn->prepare("SELECT AVG(amount) AS avg_amount FROM reservations WHERE landlord_id=? AND status='confirmed'");
+    $avg_q->bind_param("i", $landlord_id);
+    $avg_q->execute();
+}
+$avg_result = $avg_q->get_result();
+$avg_booking = $avg_result ? ($avg_result->fetch_assoc()['avg_amount'] ?? 0) : 0;
+$avg_q->close();
+
+//COLLECTION RATE (confirmed vs confirmed + pending)
+$expected_revenue = (float)$total_revenue + (float)$pending_revenue;
+$collection_rate = $expected_revenue > 0 ? ($total_revenue / $expected_revenue) * 100 : 0;
+
 //MONTHLY REVENUE
 if ($is_admin) {
     $month_q = $conn->prepare("
@@ -157,114 +226,258 @@ $top_q->close();
 ?>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
-   body {
-    background: #f5f7fb;
-    font-family: 'Inter', sans-serif;
+   :root {
+        --ink: #111827;
+        --muted: #64748b;
+        --accent: #0ea5e9;
+        --accent-2: #14b8a6;
+        --accent-3: #f59e0b;
+        --surface: #ffffff;
+        --surface-2: #f8fafc;
+        --stroke: rgba(15, 23, 42, 0.08);
+        --shadow: 0 14px 30px rgba(15, 23, 42, 0.12);
+    }
+
+    body {
+        background: radial-gradient(circle at top, rgba(14, 165, 233, 0.12), transparent 50%),
+            linear-gradient(180deg, #f1f5f9 0%, #ffffff 60%);
+        font-family: "Space Grotesk", "Segoe UI", sans-serif;
+        color: var(--ink);
+    }
+
+    .finance-shell {
+        padding: 24px;
+    }
+
+    .finance-hero {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .finance-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .finance-subtitle {
+        margin: 4px 0 0;
+        color: var(--muted);
+    }
+
+    .hero-chips {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .chip {
+        background: var(--surface);
+        border: 1px solid var(--stroke);
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-bottom: 22px;
     }
 
     .fin-box {
-        background: #ffffff;
-        padding: 22px;
-        border-radius: 20px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        background: var(--surface);
+        padding: 18px;
+        border-radius: 18px;
+        border: 1px solid var(--stroke);
+        box-shadow: var(--shadow);
     }
 
     .fin-value {
-        font-size: 30px;
+        font-size: 1.7rem;
         font-weight: 700;
-        color: #2d2e2f;
+        color: var(--ink);
     }
 
     .fin-label {
-        font-size: 14px;
-        color: #6c757d;
+        font-size: 0.95rem;
+        color: var(--muted);
     }
+
+    .fin-meta {
+        margin-top: 6px;
+        font-size: 0.85rem;
+        color: var(--muted);
+    }
+
     .tab-buttons {
         display: flex;
         gap: 10px;
         margin-bottom: 18px;
+        flex-wrap: wrap;
     }
 
     .tab-btn {
         padding: 10px 18px;
-        border-radius: 25px;
-        background: #f1f1f1;
-        border: none;
+        border-radius: 999px;
+        background: var(--surface-2);
+        border: 1px solid var(--stroke);
         cursor: pointer;
-        font-size: 14px;
+        font-size: 0.9rem;
         transition: .2s;
     }
 
     .tab-btn.active {
-        background: #2d83f8;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
         color: white;
+        border-color: transparent;
     }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
-    /* Chart boxes */
     .chart-card {
-        background: #ffffff;
+        background: var(--surface);
         border-radius: 20px;
-        padding: 25px;
-        box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        padding: 22px;
+        border: 1px solid var(--stroke);
+        box-shadow: var(--shadow);
     }
 
-    /* Header title like screenshot */
-    .finance-title {
-        font-size: 28px;
-        font-weight: 700;
-        background: linear-gradient(135deg, #2d83f8, #3aa9ff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .chart-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--muted);
+        margin-bottom: 14px;
     }
 
-    /* Summary section spacing */
-    .summary-row {
-        margin-bottom: 18px;
+    .chart-wrap {
+        background: var(--surface-2);
+        border: 1px dashed rgba(15, 23, 42, 0.12);
+        border-radius: 16px;
+        padding: 12px;
+    }
+
+    .chart-wrap canvas {
+        width: 100% !important;
+        height: 320px !important;
+    }
+
+    @media (max-width: 992px) {
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+    }
+
+    @media (max-width: 576px) {
+        .finance-shell {
+            padding: 16px;
+        }
+        .finance-hero {
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        .finance-title {
+            font-size: 1.6rem;
+        }
+        .chip {
+            font-size: 0.78rem;
+            padding: 5px 10px;
+        }
+        .kpi-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .fin-box {
+            padding: 12px;
+        }
+        .fin-value {
+            font-size: 1.3rem;
+        }
+        .fin-label {
+            font-size: 0.85rem;
+        }
+        .tab-buttons {
+            gap: 6px;
+        }
+        .chart-wrap canvas {
+            height: 260px !important;
+        }
     }
 </style>
 
-<div class="container py-4">
-
-    <h3 class="finance-title mb-4">Financial Overview</h3>
-
-    <!--Summary cards-->
-    <div class="row g-3">
-        <div class="col-md-4">
-            <div class="fin-box">
-                <div class="fin-label">Total Revenue</div>
-                <div class="fin-value">KES <?= number_format((float)$total_revenue, 0) ?></div>
-            </div>
+<div class="finance-shell">
+    <div class="finance-hero">
+        <div>
+            <h3 class="finance-title">Financial Overview</h3>
+            <p class="finance-subtitle">Track revenue performance, bookings value, and portfolio health.</p>
         </div>
-
-        <div class="col-md-4">
-            <div class="fin-box">
-                <div class="fin-label">Monthly Revenue</div>
-                <div class="fin-value">KES <?= number_format((float)array_sum($month_values), 0) ?></div>
-            </div>
-
+        <div class="hero-chips">
+            <span class="chip"><?php echo $is_admin ? 'Scope: Platform' : 'Scope: My portfolio'; ?></span>
+            <span class="chip">Updated: <?php echo date('M d, Y'); ?></span>
         </div>
-
     </div>
 
-</div>
+    <!--Summary cards-->
+    <div class="kpi-grid">
+        <div class="fin-box">
+            <div class="fin-label">Total Revenue</div>
+            <div class="fin-value">KES <?= number_format((float)$total_revenue, 0) ?></div>
+            <div class="fin-meta">Confirmed payments</div>
+        </div>
 
-<div class="tab-buttons">
-    <button class="tab-btn active" onclick="showTab('trends')">Revenue Trends</button>
-    <button class="tab-btn" onclick="showTab('distribution')">Property Distribution</button>
-    <button class="tab-btn" onclick="showTab('performers')">Top Performers</button>
-</div>
+        <div class="fin-box">
+            <div class="fin-label">This Month</div>
+            <div class="fin-value">KES <?= number_format((float)$this_month_revenue, 0) ?></div>
+            <div class="fin-meta">Current month</div>
+        </div>
+
+        <div class="fin-box">
+            <div class="fin-label">Last 30 Days</div>
+            <div class="fin-value">KES <?= number_format((float)$last30_revenue, 0) ?></div>
+            <div class="fin-meta">Rolling window</div>
+        </div>
+
+        <div class="fin-box">
+            <div class="fin-label">Pending Revenue</div>
+            <div class="fin-value">KES <?= number_format((float)$pending_revenue, 0) ?></div>
+            <div class="fin-meta">Awaiting confirmation</div>
+        </div>
+
+        <div class="fin-box">
+            <div class="fin-label">Avg Booking Value</div>
+            <div class="fin-value">KES <?= number_format((float)$avg_booking, 0) ?></div>
+            <div class="fin-meta"><?= number_format((float)$total_bookings) ?> bookings</div>
+        </div>
+
+        <div class="fin-box">
+            <div class="fin-label">Collection Rate</div>
+            <div class="fin-value"><?= number_format((float)$collection_rate, 1) ?>%</div>
+            <div class="fin-meta">Confirmed vs pending</div>
+        </div>
+    </div>
+
+    <div class="tab-buttons">
+        <button class="tab-btn active" onclick="showTab('trends')">Revenue Trends</button>
+        <button class="tab-btn" onclick="showTab('distribution')">Property Distribution</button>
+        <button class="tab-btn" onclick="showTab('performers')">Top Performers</button>
+    </div>
 
 
 <div id="trends" class="tab-content active">
     <div class="row g-4">
         <div class="col-md-7">
             <div class="chart-card">
-                <h6 class="text-muted mb-3">Monthly Revenue</h6>
-                <div style="position: relative; height: 380px;">
+                <div class="chart-title">Monthly Revenue</div>
+                <div class="chart-wrap">
                     <canvas id="monthlyChart"></canvas>
                 </div>
             </div>
@@ -272,8 +485,8 @@ $top_q->close();
 
         <div class="col-md-5">
             <div class="chart-card">
-                <h6 class="text-muted mb-3">Revenue by Property Type</h6>
-                <div style="position: relative; height: 380px;">
+                <div class="chart-title">Revenue by Property Type</div>
+                <div class="chart-wrap">
                     <canvas id="typeChart"></canvas>
                 </div>
             </div>
@@ -286,8 +499,8 @@ $top_q->close();
 
         <div class="col-md-7">
             <div class="chart-card">
-                <h6 class="text-muted mb-3">Bookings by Property Type</h6>
-                <div style="position: relative; height: 400px;">
+                <div class="chart-title">Bookings by Property Type</div>
+                <div class="chart-wrap">
                     <canvas id="pieDistribution"></canvas>
                 </div>
             </div>
@@ -295,7 +508,7 @@ $top_q->close();
 
         <div class="col-md-5">
             <div class="chart-card">
-                <h6 class="text-muted mb-3">Booking Breakdown</h6>
+                <div class="chart-title">Booking Breakdown</div>
                 <div id="typeBreakdown"></div>
             </div>
         </div>
@@ -305,8 +518,8 @@ $top_q->close();
 
 <div id="performers" class="tab-content">
     <div class="chart-card">
-        <h6 class="text-muted mb-3">Top Earning Properties</h6>
-        <div style="position: relative; height: 350px;">
+        <div class="chart-title">Top Earning Properties</div>
+        <div class="chart-wrap">
             <canvas id="topChart"></canvas>
         </div>
     </div>
@@ -404,19 +617,40 @@ function initMonthlyChart() {
             datasets: [{
                 label: "KES",
                 data: MONTH_VALUES,
-                backgroundColor: '#2d83f8',
-                borderColor: '#2d83f8',
-                borderWidth: 1
+                backgroundColor: 'rgba(14, 165, 233, 0.6)',
+                borderColor: '#0ea5e9',
+                borderWidth: 2,
+                borderRadius: 10,
+                barThickness: 26,
+                hoverBackgroundColor: 'rgba(20, 184, 166, 0.7)'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' },
+                    ticks: {
+                        color: '#64748b',
+                        callback: (value) => `KES ${value}`
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b' }
+                }
             },
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 10,
+                    callbacks: {
+                        label: (ctx) => `KES ${ctx.parsed.y}`
+                    }
+                }
             }
         }
     });
@@ -433,15 +667,23 @@ function initTypeSmallChart() {
             labels: TYPE_LABELS,
             datasets: [{
                 data: TYPE_VALUES,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                borderWidth: 1
+                backgroundColor: ['#0ea5e9', '#14b8a6', '#f59e0b', '#f97316', '#6366f1'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#64748b', boxWidth: 12 }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 10
+                }
             }
         }
     });
@@ -458,18 +700,23 @@ function initDistributionPie() {
             labels: TYPE_LABELS,
             datasets: [{
                 data: TYPE_VALUES,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'],
-                borderWidth: 1
+                backgroundColor: ['#0ea5e9', '#14b8a6', '#f59e0b', '#f97316', '#6366f1'],
+                borderWidth: 2,
+                borderColor: '#ffffff'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
-            layout: {
-                padding: 60
-            },
+            maintainAspectRatio: false,
             plugins: {
-                legend: { position: 'bottom' }
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#64748b', boxWidth: 12 }
+                },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 10
+                }
             }
         }
     });
@@ -490,19 +737,39 @@ function initTopChart() {
             datasets: [{
                 label: "KES",
                 data: TOP_VALUES,
-                backgroundColor: '#3aa9ff',
-                borderColor: '#3aa9ff',
-                borderWidth: 1
+                backgroundColor: 'rgba(20, 184, 166, 0.6)',
+                borderColor: '#14b8a6',
+                borderWidth: 2,
+                borderRadius: 10,
+                barThickness: 26
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: true,
+            maintainAspectRatio: false,
             scales: {
-                y: { beginAtZero: true }
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(148, 163, 184, 0.2)' },
+                    ticks: {
+                        color: '#64748b',
+                        callback: (value) => `KES ${value}`
+                    }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#64748b' }
+                }
             },
             plugins: {
-                legend: { display: false }
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: '#0f172a',
+                    padding: 10,
+                    callbacks: {
+                        label: (ctx) => `KES ${ctx.parsed.y}`
+                    }
+                }
             }
         }
     });
@@ -512,7 +779,7 @@ function initTopChart() {
 function renderTypeBreakdown() {
     const types = TYPE_LABELS || [];
     const values = TYPE_VALUES || [];
-    const colors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+    const colors = ['#0ea5e9', '#14b8a6', '#f59e0b', '#f97316', '#6366f1'];
     const total = values.reduce((a, b) => a + (Number(b) || 0), 0);
 
     let breakdownHtml = '';

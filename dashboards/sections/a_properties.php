@@ -33,6 +33,26 @@ if (!$result) {
     .table th:nth-child(2), .table td:nth-child(2) { min-width: 200px; } /* Property name */
     .table th:nth-child(3), .table td:nth-child(3) { min-width: 150px; } /* Landlord */
     .table th:nth-child(5), .table td:nth-child(5) { min-width: 120px; } /* Price */
+
+    @media (max-width: 576px) {
+        .filters-row {
+            flex-wrap: nowrap;
+            gap: 6px;
+        }
+        .filters-row > [class^="col-"] {
+            flex: 1 1 0;
+            width: auto;
+            min-width: 0;
+        }
+        .filters-row .col-filter-export {
+            flex: 0 0 auto;
+            min-width: 80px;
+        }
+        .filters-row .form-control,
+        .filters-row .form-select {
+            min-width: 0;
+        }
+    }
 </style>
 
 <div class="container-fluid" style="padding-top: 56px;">
@@ -40,7 +60,7 @@ if (!$result) {
     <p class="text-muted">Review and manage all property listings on the platform</p>
 
     <!-- Filters -->
-    <div class="row mb-3">
+    <div class="row mb-3 filters-row">
         <div class="col-md-4">
             <input type="search" class="form-control" placeholder="Search properties...">
         </div>
@@ -62,7 +82,7 @@ if (!$result) {
                 <option>House</option>
             </select>
         </div>
-        <div class="col-md-2 text-end">
+        <div class="col-md-2 text-end col-filter-export">
             <button class="btn btn-outline-secondary">
                 <i class="bi bi-download"></i> Export
             </button>
